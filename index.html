@@ -1,0 +1,2776 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ENTRENAMIENTO DE PRESENTACIONES · Oratoria, Pronunciación & Control de Ansiedad</title>
+    <meta name="description" content="Aplicación web interactiva para el entrenamiento de presentaciones y defensa de TFM ante el tribunal de la UE. Grabación en vídeo y voz, análisis de pronunciación, entonación, ritmo y auditoría de fallos observados. Compatible con móviles, tabletas y ordenadores.">
+    <meta name="theme-color" content="#080d1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Presentaciones TFM">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon-192.svg">
+    <link rel="apple-touch-icon" href="icon-192.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:           #080d1a;
+            --surface:      #0f172a;
+            --card:         #1a2540;
+            --card-sub:     #141d33;
+            --border:       #1e3a5f;
+            --border-glow:  rgba(59, 130, 246, 0.4);
+            --primary:      #3b82f6;
+            --primary-dk:   #1d4ed8;
+            --primary-lt:   #93c5fd;
+            --accent:       #f59e0b;
+            --success:      #10b981;
+            --danger:       #ef4444;
+            --warn:         #f59e0b;
+            --text:         #f1f5f9;
+            --text-muted:   #94a3b8;
+            --muted:        #64748b;
+            --glow-blue:    0 0 25px rgba(59,130,246,.35);
+            --glow-green:   0 0 25px rgba(16,185,129,.35);
+            --glow-red:     0 0 25px rgba(239,68,68,.35);
+            --glow-amber:   0 0 25px rgba(245,158,11,.35);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: max(16px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+            -webkit-tap-highlight-color: transparent;
+            background-image:
+                radial-gradient(ellipse 80% 40% at 50% -10%, rgba(59,130,246,.18), transparent),
+                radial-gradient(ellipse 60% 30% at 85% 90%, rgba(16,185,129,.09), transparent),
+                radial-gradient(ellipse 50% 25% at 15% 75%, rgba(245,158,11,.06), transparent);
+        }
+        .container { width: 100%; max-width: 980px; }
+
+        /* ── HEADER ─────────────────────────────────────────────── */
+        header {
+            text-align: center;
+            padding: 16px 0 18px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .header-badge {
+            display: inline-block;
+            background: rgba(59,130,246,.15);
+            border: 1px solid rgba(59,130,246,.35);
+            color: var(--primary-lt);
+            font-size: .72rem;
+            letter-spacing: 2.2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            padding: 5px 15px;
+            border-radius: 999px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: clamp(1.35rem, 5vw, 2.2rem);
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #ffffff 10%, #93c5fd 60%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            margin-top: 6px;
+            font-size: .78rem;
+            color: var(--accent);
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* ── TABS ────────────────────────────────────────────────── */
+        .tabs {
+            display: flex; gap: 6px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 5px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1; padding: 10px 14px;
+            background: transparent; border: none;
+            border-radius: 8px; cursor: pointer;
+            font-size: .84rem; font-weight: 700;
+            color: var(--muted); transition: all .2s;
+            letter-spacing: .5px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            touch-action: manipulation;
+            min-height: 44px;
+        }
+        .tab-btn:hover { color: var(--text); background: rgba(255,255,255,.03); }
+        .tab-btn.active {
+            background: var(--card); color: var(--text);
+            box-shadow: 0 2px 10px rgba(0,0,0,.45);
+            border: 1px solid var(--border);
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: fadeIn .3s ease-out; }
+
+        /* ── COUNTDOWN OVERLAY ──────────────────────────────────── */
+        #countdown-overlay {
+            position: fixed; inset: 0;
+            background: rgba(8,13,26,.96);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 9999;
+            transition: opacity .4s;
+            backdrop-filter: blur(6px);
+        }
+        #countdown-overlay.fade-out { opacity: 0; pointer-events: none; }
+        #countdown-overlay.hidden    { display: none !important; }
+        #countdown-number {
+            font-size: clamp(5.5rem, 24vw, 11rem);
+            font-weight: 900;
+            color: var(--primary);
+            animation: pop .7s ease-out;
+            text-shadow: var(--glow-blue);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        #countdown-label {
+            font-size: 1.1rem;
+            color: var(--primary-lt);
+            margin-top: 14px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+            text-align: center;
+            padding: 0 16px;
+        }
+
+        /* ── MODE SELECTOR CARD ─────────────────────────────────── */
+        .mode-selector-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.3);
+        }
+        .mode-selector-title {
+            font-size: .86rem;
+            font-weight: 700;
+            color: var(--primary-lt);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .mode-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .mode-option {
+            position: relative;
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 13px 14px;
+            cursor: pointer;
+            transition: all .22s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            touch-action: manipulation;
+        }
+        .mode-option:hover {
+            border-color: var(--primary);
+            background: rgba(59,130,246,.08);
+        }
+        .mode-option.selected {
+            border-color: var(--primary);
+            background: rgba(59,130,246,.12);
+            box-shadow: var(--glow-blue);
+        }
+        .mode-option input[type="radio"] {
+            margin-top: 3px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+        .mode-icon { font-size: 1.5rem; flex-shrink: 0; line-height: 1; }
+        .mode-info-title {
+            font-size: .9rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 3px;
+        }
+        .mode-info-desc {
+            font-size: .76rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        /* ── TIMERS ROW ─────────────────────────────────────────── */
+        .timers-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px; margin-bottom: 18px;
+        }
+        .timer-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 10px;
+            text-align: center;
+            transition: border-color .3s, box-shadow .3s;
+        }
+        .timer-box.active { border-color: var(--primary); box-shadow: var(--glow-blue); }
+        .timer-box.warn   { border-color: var(--warn); box-shadow: var(--glow-amber); }
+        .timer-box.danger { border-color: var(--danger); box-shadow: var(--glow-red); }
+        .timer-label {
+            font-size: .64rem; text-transform: uppercase;
+            letter-spacing: 1.2px; color: var(--muted); margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .timer-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(1.4rem, 4vw, 2.2rem);
+            font-weight: 700; color: var(--text); transition: color .3s;
+        }
+        .timer-value.warn   { color: var(--warn); }
+        .timer-value.danger { color: var(--danger); animation: blink 1s step-end infinite; }
+        .progress-track {
+            height: 5px; background: var(--border);
+            border-radius: 999px; margin-top: 8px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: var(--primary);
+            border-radius: 999px; transition: width .9s linear, background .3s; width: 0%;
+        }
+        .progress-fill.warn   { background: var(--warn); }
+        .progress-fill.danger { background: var(--danger); }
+
+        /* ── SLIDES PROGRESS BAR ────────────────────────────────── */
+        .slides-progress-bar {
+            display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .slide-dot {
+            flex: 1; height: 6px; border-radius: 999px;
+            background: var(--border); min-width: 12px; transition: all .3s;
+            cursor: pointer;
+        }
+        .slide-dot.done    { background: var(--success); }
+        .slide-dot.current { background: var(--primary); box-shadow: 0 0 10px var(--primary); transform: scaleY(1.3); }
+
+        /* ── LIVE ARENA (SLIDE CARD + CAMERA/VISUALIZER) ────────── */
+        .live-arena {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .live-arena.dual-mode {
+            grid-template-columns: 1.1fr 0.9fr;
+            align-items: stretch;
+        }
+
+        .slide-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-left: 5px solid var(--primary); border-radius: 12px;
+            padding: 20px; min-height: 230px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            transition: border-color .4s;
+            box-shadow: 0 4px 20px rgba(0,0,0,.25);
+            touch-action: pan-y;
+        }
+        .slide-header {
+            display: flex; justify-content: space-between;
+            align-items: flex-start; gap: 10px;
+            margin-bottom: 12px; flex-wrap: wrap;
+        }
+        .slide-title {
+            font-size: 1.02rem; font-weight: 700;
+            color: var(--primary); line-height: 1.35; flex: 1;
+        }
+        .badge {
+            font-size: .72rem; font-weight: 700;
+            padding: 4px 11px; border-radius: 999px; letter-spacing: .5px;
+        }
+        .badge-num { background: var(--primary); color: #fff; }
+        .slide-content-text {
+            font-size: .9rem; line-height: 1.65;
+            color: #cbd5e1; margin-bottom: 12px;
+        }
+        .phrase-box {
+            background: rgba(59,130,246,.08);
+            border: 1px solid rgba(59,130,246,.25);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px; padding: 12px 14px;
+            font-style: italic; font-size: .86rem;
+            color: #93c5fd; line-height: 1.55;
+            margin-top: auto;
+        }
+        .phrase-box strong { display: block; font-style: normal; margin-bottom: 4px; color: var(--primary); }
+
+        /* ── CAMERA / AUDIO MONITOR PANEL ───────────────────────── */
+        .live-media-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex; flex-direction: column;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .live-media-header {
+            display: flex; justify-content: space-between;
+            align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .rec-indicator {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(239,68,68,.15);
+            border: 1px solid rgba(239,68,68,.3);
+            color: var(--danger);
+            padding: 3px 9px; border-radius: 999px;
+            font-size: .7rem; font-weight: 700; letter-spacing: 1px;
+        }
+        .rec-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--danger);
+            animation: pulse 1.2s infinite;
+        }
+        .cam-controls { display: flex; gap: 6px; }
+        .btn-cam-mini {
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--text-muted); padding: 4px 8px; border-radius: 6px;
+            font-size: .72rem; cursor: pointer; touch-action: manipulation;
+        }
+        .btn-cam-mini:hover { color: #fff; border-color: var(--primary); }
+
+        .video-box {
+            position: relative;
+            width: 100%;
+            height: 210px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+        }
+        #live-camera-video {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform .2s;
+        }
+        #live-camera-video.mirrored {
+            transform: scaleX(-1);
+        }
+        .video-overlay-tip {
+            position: absolute; bottom: 6px; left: 6px; right: 6px;
+            background: rgba(8,13,26,.8);
+            border-radius: 6px; padding: 4px 8px;
+            font-size: .68rem; color: #cbd5e1;
+            text-align: center; pointer-events: none;
+        }
+
+        /* ── ACOUSTIC MONITOR BARS & METERS ─────────────────────── */
+        .live-acoustic-bar {
+            background: var(--card-sub);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex; flex-direction: column; gap: 9px;
+        }
+        .acoustic-row {
+            display: flex; justify-content: space-between;
+            align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .acoustic-metric {
+            display: flex; align-items: center; gap: 6px;
+            font-size: .76rem;
+        }
+        .metric-title { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: .66rem; letter-spacing: 1px; }
+        .vu-track {
+            width: 90px; height: 8px;
+            background: var(--border);
+            border-radius: 999px; overflow: hidden; position: relative;
+        }
+        .vu-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #10b981 0%, #f59e0b 70%, #ef4444 100%);
+            border-radius: 999px; transition: width .1s ease;
+        }
+        .badge-pitch {
+            font-size: .7rem; font-weight: 700;
+            padding: 3px 8px; border-radius: 999px;
+            background: rgba(59,130,246,.15);
+            color: var(--primary-lt);
+            border: 1px solid rgba(59,130,246,.3);
+        }
+        .badge-pitch.dynamic { background: rgba(16,185,129,.15); color: var(--success); border-color: rgba(16,185,129,.35); }
+        .badge-pitch.flat    { background: rgba(245,158,11,.15); color: var(--accent);  border-color: rgba(245,158,11,.35); animation: pulse 1.5s infinite; }
+        .badge-pitch.silent  { background: rgba(100,116,139,.15); color: var(--muted); border-color: rgba(100,116,139,.3); }
+
+        .badge-wpm {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .74rem; font-weight: 700;
+            padding: 3px 7px; border-radius: 6px;
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .badge-wpm.fast { color: var(--danger); border-color: var(--danger); }
+        .badge-wpm.good { color: var(--success); border-color: var(--success); }
+        .badge-wpm.slow { color: var(--warn); border-color: var(--warn); }
+
+        /* Canvas visualizador */
+        #live-audio-canvas {
+            width: 100%; height: 34px;
+            background: rgba(8,13,26,.6);
+            border-radius: 6px;
+            border: 1px solid rgba(30,58,95,.6);
+            display: block;
+        }
+
+        /* Live Speech Recognition & Toast Alert */
+        .live-speech-box {
+            background: rgba(15,23,42,.7);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: .76rem;
+            color: #cbd5e1;
+            min-height: 36px;
+            max-height: 56px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .live-speech-box strong { color: var(--primary-lt); }
+        .live-speech-alert {
+            position: absolute; right: 8px; top: 8px;
+            background: rgba(239,68,68,.9);
+            color: #fff; font-size: .66rem; font-weight: 700;
+            padding: 2px 7px; border-radius: 4px;
+            animation: pop .3s ease;
+        }
+
+        /* ── CONTROLS ROW ───────────────────────────────────────── */
+        .controls-row {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+        }
+        button {
+            font-family: 'Inter', sans-serif;
+            font-size: .84rem; font-weight: 700;
+            padding: 12px 20px; border-radius: 9px; border: none;
+            cursor: pointer; transition: all .18s; letter-spacing: .3px;
+            display: inline-flex; align-items: center; gap: 8px;
+            touch-action: manipulation;
+            min-height: 48px;
+        }
+        button:active { transform: scale(.97); }
+        button:disabled { opacity: .4; cursor: not-allowed; }
+        .btn-start { background: var(--success); color: #fff; flex: 1; justify-content: center; }
+        .btn-start:hover:not(:disabled) { background: #059669; box-shadow: var(--glow-green); }
+        .btn-next  { background: var(--primary); color: #fff; flex: 1; justify-content: center; }
+        .btn-next:hover:not(:disabled) { background: var(--primary-dk); box-shadow: var(--glow-blue); }
+        .btn-pause { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+        .btn-pause:hover:not(:disabled) { background: var(--border); }
+        .btn-pause.paused { background: rgba(245,158,11,.15); color: var(--accent); border-color: var(--accent); }
+
+        .keyboard-hint { font-size: .72rem; color: var(--muted); text-align: center; margin-top: 4px; }
+        .keyboard-hint kbd {
+            background: var(--card); border: 1px solid var(--border);
+            padding: 2px 6px; border-radius: 4px; font-size: .7rem; font-family: monospace;
+        }
+
+        /* Mobile Swipe Hint */
+        .mobile-swipe-hint {
+            font-size: .74rem; color: var(--accent); text-align: center;
+            margin-top: 6px; display: none;
+        }
+
+        /* ── CHECKLIST CARD & AUTOEVALUACIÓN ────────────────────── */
+        .checklist-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 24px;
+            box-shadow: 0 4px 25px rgba(0,0,0,.35);
+        }
+        .checklist-title { font-size: 1.15rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+        .checklist-sub { font-size: .82rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+        .question-group { margin-bottom: 18px; }
+        .question-group > p { font-size: .88rem; font-weight: 600; margin-bottom: 10px; line-height: 1.45; }
+        .radio-options { display: flex; flex-wrap: wrap; gap: 8px; }
+        .radio-options label {
+            display: flex; align-items: center; gap: 7px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 9px 13px;
+            font-size: .82rem; cursor: pointer; transition: all .15s;
+            touch-action: manipulation; min-height: 44px;
+        }
+        .radio-options label:has(input:checked) {
+            border-color: var(--primary);
+            background: rgba(59,130,246,.12);
+            color: var(--primary-lt);
+            font-weight: 600;
+        }
+        .radio-options input { accent-color: var(--primary); }
+        .btn-submit {
+            background: var(--success); color: #fff;
+            width: 100%; justify-content: center; margin-top: 20px; padding: 14px;
+            font-size: .95rem; min-height: 52px;
+        }
+        .btn-submit:hover:not(:disabled) { background: #059669; box-shadow: var(--glow-green); }
+
+        /* ── STAT CHIPS ─────────────────────────────────────────── */
+        .stat-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+        .stat-chip {
+            flex: 1; min-width: 95px; background: var(--card);
+            border: 1px solid var(--border); border-radius: 10px; padding: 12px 10px; text-align: center;
+        }
+        .stat-chip .val { font-size: 1.3rem; font-weight: 800; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
+        .stat-chip .lbl { font-size: .66rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; font-weight: 600; }
+
+        /* ── INFORME DE ACTUACIÓN & REPRODUCTOR ─────────────────── */
+        #pantalla-informe { animation: slideIn .4s ease-out; }
+        .session-done-header {
+            text-align: center; padding: 10px 0 20px;
+            border-bottom: 1px solid var(--border); margin-bottom: 20px;
+        }
+        .session-done-header .icon { font-size: 3rem; margin-bottom: 8px; }
+        .session-done-header h2 { font-size: 1.45rem; font-weight: 800; color: #fff; }
+        .session-done-header p  { font-size: .84rem; color: var(--muted); margin-top: 5px; }
+
+        /* Media Player Card in Report */
+        .media-review-card {
+            background: var(--card-sub);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .media-review-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+        }
+        .media-badge-tag {
+            font-size: .74rem; font-weight: 700;
+            background: rgba(59,130,246,.15);
+            border: 1px solid rgba(59,130,246,.3);
+            color: var(--primary-lt);
+            padding: 4px 12px; border-radius: 999px;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .player-wrapper {
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+        #review-video {
+            width: 100%; max-height: 400px;
+            display: block; background: #000;
+        }
+        #review-audio {
+            width: 100%; padding: 10px;
+            display: block;
+        }
+
+        /* Slide Markers Timeline */
+        .timeline-container { margin-bottom: 12px; }
+        .timeline-title {
+            font-size: .74rem; color: var(--muted); font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+        }
+        .timeline-pills {
+            display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .timeline-pill {
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--text-muted); font-size: .72rem; font-weight: 600;
+            padding: 6px 10px; border-radius: 6px; white-space: nowrap;
+            cursor: pointer; transition: all .15s;
+            display: inline-flex; align-items: center; gap: 5px;
+            touch-action: manipulation;
+        }
+        .timeline-pill:hover {
+            border-color: var(--primary); color: #fff; background: rgba(59,130,246,.15);
+        }
+        .timeline-pill .pill-time {
+            font-family: 'JetBrains Mono', monospace; font-size: .68rem; color: var(--primary-lt);
+        }
+
+        .media-actions-row {
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;
+        }
+        .btn-download-media {
+            background: var(--card); color: var(--accent);
+            border: 1px solid rgba(245,158,11,.35);
+            padding: 9px 16px; font-size: .8rem;
+            touch-action: manipulation; min-height: 44px;
+        }
+        .btn-download-media:hover { border-color: var(--accent); background: rgba(245,158,11,.1); }
+
+        /* Score Ring */
+        .score-ring-wrap {
+            display: flex; flex-direction: column;
+            align-items: center; margin: 0 auto 26px;
+        }
+        .score-ring { position: relative; width: 165px; height: 165px; }
+        .score-ring svg { transform: rotate(-90deg); }
+        .score-ring-text {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .score-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem; font-weight: 900; line-height: 1;
+        }
+        .score-label { font-size: .72rem; color: var(--muted); letter-spacing: 1px; margin-top: 4px; font-weight: 600; }
+        .score-verdict { font-size: 1.1rem; font-weight: 800; margin-top: 10px; text-align: center; }
+
+        /* Score Bars */
+        .score-bars { margin-bottom: 26px; }
+        .score-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .score-bar-label { font-size: .78rem; color: var(--text-muted); width: 170px; flex-shrink: 0; text-align: right; font-weight: 500; }
+        .score-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+        .score-bar-fill { height: 100%; border-radius: 999px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+        .score-bar-val { font-family: 'JetBrains Mono', monospace; font-size: .8rem; font-weight: 700; width: 30px; text-align: left; }
+
+        /* ── AUDITORÍA DE FALLOS OBSERVADOS (CENTRAL FEATURE) ───── */
+        .failures-audit-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .failures-audit-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border); padding-bottom: 12px;
+            margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+        }
+        .failures-title {
+            font-size: 1.02rem; font-weight: 800; color: #fff;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .failures-counters {
+            display: flex; gap: 6px; flex-wrap: wrap;
+        }
+        .counter-badge {
+            font-size: .7rem; font-weight: 700;
+            padding: 3px 8px; border-radius: 999px;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .counter-badge.crit  { background: rgba(239,68,68,.18); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+        .counter-badge.warn  { background: rgba(245,158,11,.18); color: var(--accent); border: 1px solid rgba(245,158,11,.3); }
+        .counter-badge.mild  { background: rgba(59,130,246,.18); color: var(--primary-lt); border: 1px solid rgba(59,130,246,.3); }
+        .counter-badge.total { background: rgba(255,255,255,.08); color: #fff; border: 1px solid var(--border); }
+
+        .failures-filters {
+            display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .fail-filter-btn {
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--muted); font-size: .73rem; font-weight: 600;
+            padding: 5px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+            touch-action: manipulation;
+        }
+        .fail-filter-btn.active {
+            background: var(--primary); color: #fff; border-color: var(--primary);
+        }
+
+        .failures-list { display: flex; flex-direction: column; gap: 11px; }
+
+        .failure-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 9px;
+            padding: 13px 15px;
+            display: flex; flex-direction: column; gap: 8px;
+            transition: all .2s;
+        }
+        .failure-card:hover {
+            border-color: rgba(59,130,246,.5);
+            background: #1e2c4d;
+        }
+        .failure-card.crit { border-left-color: var(--danger); }
+        .failure-card.warn { border-left-color: var(--accent); }
+        .failure-card.mild { border-left-color: var(--primary); }
+
+        .fail-top {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 8px;
+        }
+        .fail-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .fail-tag-sev {
+            font-size: .64rem; font-weight: 800; text-transform: uppercase;
+            padding: 2px 6px; border-radius: 4px; letter-spacing: .5px;
+        }
+        .fail-tag-sev.crit { background: rgba(239,68,68,.25); color: #fca5a5; }
+        .fail-tag-sev.warn { background: rgba(245,158,11,.25); color: #fde047; }
+        .fail-tag-sev.mild { background: rgba(59,130,246,.25); color: #bfdbfe; }
+
+        .fail-tag-cat { font-size: .72rem; color: var(--text-muted); font-weight: 600; }
+        .fail-tag-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .72rem; color: var(--accent);
+            background: rgba(0,0,0,.35); padding: 2px 6px; border-radius: 4px;
+        }
+
+        .btn-jump-fail {
+            background: rgba(59,130,246,.15);
+            border: 1px solid rgba(59,130,246,.35);
+            color: var(--primary-lt);
+            padding: 5px 11px; border-radius: 6px;
+            font-size: .74rem; font-weight: 700;
+            cursor: pointer; transition: all .15s;
+            display: inline-flex; align-items: center; gap: 5px;
+            touch-action: manipulation;
+        }
+        .btn-jump-fail:hover {
+            background: var(--primary); color: #fff; box-shadow: var(--glow-blue);
+        }
+
+        .fail-desc { font-size: .83rem; line-height: 1.5; color: #e2e8f0; }
+        .fail-impact {
+            font-size: .76rem; line-height: 1.45; color: #cbd5e1;
+            background: rgba(0,0,0,.2); padding: 8px 10px; border-radius: 6px;
+            border-left: 2px solid var(--border);
+        }
+        .fail-impact strong { color: var(--primary-lt); }
+        .fail-tip {
+            font-size: .76rem; line-height: 1.45; color: #a7f3d0;
+            background: rgba(16,185,129,.07); padding: 8px 10px; border-radius: 6px;
+            border-left: 2px solid var(--success);
+        }
+        .fail-tip strong { color: var(--success); }
+
+        .empty-failures {
+            text-align: center; padding: 26px; color: var(--muted);
+            background: rgba(16,185,129,.05); border: 1px dashed rgba(16,185,129,.25);
+            border-radius: 8px;
+        }
+        .empty-failures .icon { font-size: 2.2rem; margin-bottom: 6px; }
+
+        /* Manual observation adder */
+        .manual-obs-box {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+        }
+        .manual-obs-input {
+            flex: 1; min-width: 200px;
+            background: var(--card); border: 1px solid var(--border);
+            color: #fff; padding: 9px 12px; border-radius: 6px;
+            font-size: .8rem; font-family: inherit;
+        }
+        .manual-obs-input:focus { outline: none; border-color: var(--primary); }
+        .btn-add-obs {
+            background: var(--card); border: 1px solid var(--primary);
+            color: var(--primary-lt); padding: 9px 14px; border-radius: 6px;
+            font-size: .8rem; cursor: pointer; touch-action: manipulation;
+        }
+        .btn-add-obs:hover { background: var(--primary); color: #fff; }
+
+        /* Full Transcript Accordion */
+        .transcript-accordion {
+            background: var(--card-sub);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 22px;
+            overflow: hidden;
+        }
+        .transcript-summary {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: .84rem;
+            color: var(--text-muted);
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--surface);
+            touch-action: manipulation;
+        }
+        .transcript-summary:hover { color: #fff; }
+        .transcript-body {
+            padding: 14px 16px;
+            font-size: .82rem; line-height: 1.6;
+            color: #cbd5e1;
+            max-height: 240px; overflow-y: auto;
+        }
+        .transcript-body mark.muletilla-mark {
+            background: rgba(239,68,68,.3);
+            color: #fca5a5;
+            padding: 1px 4px; border-radius: 3px; font-weight: 700;
+        }
+
+        /* Report Sections (Strengths & Recommendations) */
+        .report-section { margin-bottom: 20px; }
+        .report-section h4 {
+            font-size: .8rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 10px; padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .report-items { display: flex; flex-direction: column; gap: 8px; }
+        .report-item {
+            display: flex; gap: 10px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 10px 14px;
+            font-size: .82rem; line-height: 1.45; align-items: flex-start;
+        }
+        .report-item .ri-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .report-item.positive { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.05); }
+        .report-item.improve  { border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.05); }
+        .report-item.critical { border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.05); }
+
+        .report-bottom-actions {
+            display: flex; flex-direction: column; gap: 10px; margin-top: 22px;
+        }
+        .btn-save-report {
+            background: var(--card); color: var(--accent);
+            border: 1px solid rgba(245,158,11,.3);
+            width: 100%; justify-content: center; padding: 13px;
+        }
+        .btn-save-report:hover { border-color: var(--accent); background: rgba(245,158,11,.08); }
+        .btn-print-report {
+            background: var(--card); color: var(--primary-lt);
+            border: 1px solid var(--border);
+            width: 100%; justify-content: center; padding: 12px;
+        }
+        .btn-print-report:hover { border-color: var(--primary); }
+        .btn-new-session {
+            background: var(--primary); color: #fff;
+            width: 100%; justify-content: center; padding: 14px;
+        }
+        .btn-new-session:hover { background: var(--primary-dk); box-shadow: var(--glow-blue); }
+
+        /* ── HISTORIAL TABLE ────────────────────────────────────── */
+        .history-table-wrapper { overflow-x: auto; margin-top: 14px; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+        th { color: var(--muted); font-weight: 600; letter-spacing: .5px; }
+        tr:hover td { background: rgba(255,255,255,.02); }
+        .badge-ansiedad {
+            display: inline-block; width: 24px; height: 24px;
+            border-radius: 50%; text-align: center; line-height: 24px;
+            font-weight: 700; font-size: .78rem;
+        }
+        .badge-ansiedad.a1, .badge-ansiedad.a2 { background: rgba(16,185,129,.2); color: var(--success); }
+        .badge-ansiedad.a3 { background: rgba(245,158,11,.2); color: var(--warn); }
+        .badge-ansiedad.a4, .badge-ansiedad.a5 { background: rgba(239,68,68,.2); color: var(--danger); }
+        .empty-history { text-align: center; padding: 36px; color: var(--muted); font-size: .88rem; }
+        .empty-history .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .btn-history { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 8px 14px; }
+        .btn-history:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* ── ANIMATIONS ─────────────────────────────────────────── */
+        .hidden { display: none !important; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+        @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:.3} }
+        @keyframes pop {
+            0%   { transform: scale(.6); opacity: 0; }
+            60%  { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { opacity:0; transform: translateY(14px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity:0; }
+            to   { opacity:1; }
+        }
+        .slide-animate { animation: slideIn .3s ease-out; }
+
+        /* ── MOBILE & TABLET RESPONSIVE QUERIES ─────────────────── */
+        @media (max-width: 820px) {
+            .live-arena.dual-mode { grid-template-columns: 1fr; }
+            .timers-row { grid-template-columns: 1fr 1fr; }
+            .timers-row .timer-box:last-child { grid-column: span 2; }
+            .mode-options-grid { grid-template-columns: 1fr; }
+            .score-bar-label { width: 130px; }
+            .mobile-swipe-hint { display: block; }
+        }
+        @media (max-width: 580px) {
+            body { padding: 12px 10px 40px; }
+            .controls-row { flex-direction: column; }
+            .controls-row button { width: 100%; min-height: 50px; font-size: .95rem; }
+            .score-bar-row { flex-wrap: wrap; gap: 4px; }
+            .score-bar-label { width: 100%; text-align: left; }
+            .video-box { height: 185px; }
+            .slide-card { padding: 16px 14px; min-height: 200px; }
+            .checklist-card { padding: 18px 14px; }
+            .stat-chip { min-width: 45%; }
+        }
+        @media print {
+            body { background: #fff !important; color: #000 !important; padding: 0; }
+            header, .tabs, .media-review-card, .btn-save-report, .btn-print-report, .btn-new-session, .manual-obs-box { display: none !important; }
+            .container { max-width: 100%; }
+            .checklist-card, .failures-audit-section, .failure-card { background: #fff !important; border: 1px solid #ccc !important; color: #000 !important; box-shadow: none !important; }
+            h1, h2, h3, h4, .score-number { color: #000 !important; -webkit-text-fill-color: initial !important; }
+            .fail-impact, .fail-tip { color: #222 !important; background: #f9f9f9 !important; }
+            .btn-jump-fail { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 3-2-1 COUNTDOWN OVERLAY -->
+<div id="countdown-overlay" class="hidden">
+    <div id="countdown-number">3</div>
+    <div id="countdown-label">Prepárate · Respira · Comienza</div>
+</div>
+
+<div class="container">
+    <header>
+        <div class="header-badge">TFM · Máster Gestión UE · Oratoria Profesional</div>
+        <h1>ENTRENAMIENTO DE PRESENTACIONES</h1>
+        <p class="subtitle">Tribunal UE · 15 Diapositivas · 15 Minutos · Pronunciación & Entonación</p>
+    </header>
+
+    <nav class="tabs" role="tablist">
+        <button class="tab-btn active" id="tab-entrenar" role="tab" onclick="mostrarTab('entrenar')">🎙️ Entrenar & Grabar</button>
+        <button class="tab-btn" id="tab-historial" role="tab" onclick="mostrarTab('historial')">📊 Historial de Tentativas</button>
+    </nav>
+
+    <!-- PANEL 1: ENTRENAR -->
+    <section id="panel-entrenar" class="tab-panel active" role="tabpanel">
+        
+        <!-- PANTALLA: ENTRENAMIENTO ACTIVO -->
+        <div id="pantalla-entrenamiento">
+
+            <!-- SELECTOR DE MODO DE GRABACIÓN PREVIO -->
+            <div class="mode-selector-card" id="mode-selector-card">
+                <div class="mode-selector-title">⚙️ Modalidad de Grabación de la Tentativa:</div>
+                <div class="mode-options-grid">
+                    <label class="mode-option selected" id="opt-video" onclick="seleccionarModoGrabacion('video')">
+                        <input type="radio" name="modo-rec" value="video" checked>
+                        <div class="mode-icon">📹</div>
+                        <div>
+                            <div class="mode-info-title">Vídeo + Audio (Cámara Web / Frontal)</div>
+                            <div class="mode-info-desc">Graba tu imagen y voz en directo. Evalúa pronunciación, entonación, contacto visual y presencia ante el tribunal.</div>
+                        </div>
+                    </label>
+                    <label class="mode-option" id="opt-audio" onclick="seleccionarModoGrabacion('audio')">
+                        <input type="radio" name="modo-rec" value="audio">
+                        <div class="mode-icon">🎙️</div>
+                        <div>
+                            <div class="mode-info-title">Solo Voz (Audio Micrófono)</div>
+                            <div class="mode-info-desc">Graba el micrófono y analiza espectro acústico, modulación, variabilidad de entonación, ritmo y muletillas.</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- FILA DE TEMPORIZADORES -->
+            <div class="timers-row">
+                <div class="timer-box" id="box-total">
+                    <div class="timer-label">Tiempo Restante Total</div>
+                    <div class="timer-value" id="timer-total">15:00</div>
+                    <div class="progress-track"><div class="progress-fill" id="prog-total"></div></div>
+                </div>
+                <div class="timer-box" id="box-slide">
+                    <div class="timer-label">Diapositiva Actual (1:00)</div>
+                    <div class="timer-value" id="timer-slide">1:00</div>
+                    <div class="progress-track"><div class="progress-fill" id="prog-slide"></div></div>
+                </div>
+                <div class="timer-box" id="box-elapsed">
+                    <div class="timer-label">Tiempo Transcurrido</div>
+                    <div class="timer-value" id="timer-elapsed">00:00</div>
+                    <div class="progress-track"><div class="progress-fill" id="prog-elapsed"></div></div>
+                </div>
+            </div>
+
+            <!-- BARRA DE PUNTOS DE LAS 15 SLIDES -->
+            <div class="slides-progress-bar" id="slides-progress-bar"></div>
+
+            <!-- LIVE ARENA: DIAPOSITIVA + CÁMARA/ANALIZADOR ACÚSTICO -->
+            <div class="live-arena" id="live-arena">
+                <!-- Tarjeta de la diapositiva -->
+                <div class="slide-card" id="slide-card">
+                    <div>
+                        <div class="slide-header">
+                            <div class="slide-title" id="slide-title">Presiona "Iniciar Entrenamiento" para comenzar</div>
+                            <span class="badge badge-num" id="slide-number">1/15</span>
+                        </div>
+                        <div class="slide-content-text" id="slide-content-text">
+                            El sistema cronometrará tu exposición a <strong>1 minuto por diapositiva</strong> (15 min en total).<br>
+                            Se registrará tu voz o vídeo para auditar tu <strong>pronunciación</strong>, <strong>entonación</strong>, ritmo y posibles vacilaciones en cada intento.
+                        </div>
+                    </div>
+                    <div id="slide-phrase-container" class="phrase-box hidden">
+                        <strong>📢 Frase de Apertura Recomendada:</strong>
+                        <span id="slide-phrase"></span>
+                    </div>
+                </div>
+
+                <!-- Monitor de Vídeo y Acústico en Vivo -->
+                <div class="live-media-panel hidden" id="live-media-panel">
+                    <div class="live-media-header">
+                        <div class="rec-indicator" id="rec-indicator">
+                            <span class="rec-dot"></span>
+                            <span id="rec-label">REC · GRABANDO</span>
+                            <span id="rec-timer" style="font-family:'JetBrains Mono',monospace;">00:00</span>
+                        </div>
+                        <div class="cam-controls" id="cam-controls">
+                            <button type="button" class="btn-cam-mini" onclick="toggleMirrorVideo()" title="Invertir efecto espejo">🪞 Espejo</button>
+                            <button type="button" class="btn-cam-mini" onclick="cambiarCamaraFrontalTrasera()" title="Cambiar cámara frontal / trasera">🔄 Cámara</button>
+                        </div>
+                    </div>
+
+                    <!-- Cuadro de Vídeo WebCam (si está en modo vídeo) -->
+                    <div class="video-box" id="video-box">
+                        <video id="live-camera-video" autoplay muted playsinline class="mirrored"></video>
+                        <div class="video-overlay-tip">👀 Mantén la mirada en la cámara (simula los ojos del tribunal)</div>
+                    </div>
+
+                    <!-- Monitor Acústico & Entonación en Vivo -->
+                    <div class="live-acoustic-bar">
+                        <div class="acoustic-row">
+                            <div class="acoustic-metric">
+                                <span class="metric-title">Volumen:</span>
+                                <div class="vu-track"><div id="vu-fill" class="vu-fill"></div></div>
+                                <span id="vu-label" style="font-size:.7rem;color:var(--text-muted);font-weight:600;">Óptimo</span>
+                            </div>
+                            <div class="acoustic-metric">
+                                <span class="metric-title">Entonación:</span>
+                                <span id="badge-pitch" class="badge-pitch silent">Iniciando...</span>
+                            </div>
+                            <div class="acoustic-metric">
+                                <span class="metric-title">Ritmo:</span>
+                                <span id="badge-wpm" class="badge-wpm good">— WPM</span>
+                            </div>
+                        </div>
+
+                        <!-- Canvas de Espectro Acústico -->
+                        <canvas id="live-audio-canvas" width="340" height="36"></canvas>
+
+                        <!-- Transcripción y Detección de Muletillas en Directo -->
+                        <div class="live-speech-box" id="live-speech-box">
+                            <strong>🎙️ Transcripción en vivo:</strong> <span id="live-speech-text">Escuchando tu voz... Habla con firmeza y claridad.</span>
+                            <div id="live-speech-alert" class="live-speech-alert hidden">⚠️ Muletilla</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROLES PRINCIPALES -->
+            <div class="controls-row" id="controls-row">
+                <button id="btn-start" class="btn-start" onclick="prepararInicio()">▶ Iniciar Entrenamiento & Grabación</button>
+                <button id="btn-next"  class="btn-next hidden" onclick="siguienteDiapositiva()">Siguiente Diapositiva →</button>
+                <button id="btn-pause" class="btn-pause hidden" onclick="togglePausa()">⏸ Pausar Grabación</button>
+            </div>
+            <p class="keyboard-hint hidden" id="kb-hint">
+                Atajos de teclado: <kbd>Espacio</kbd> o <kbd>→</kbd> para avanzar slide &nbsp;|&nbsp; <kbd>P</kbd> para pausar/reanudar
+            </p>
+            <p class="mobile-swipe-hint" id="mobile-swipe-hint">
+                👉 Desliza hacia la izquierda con el dedo para pasar de diapositiva
+            </p>
+        </div>
+
+        <!-- PANTALLA: CHECKLIST REFLEXIVO Y AUTOEVALUACIÓN -->
+        <div id="pantalla-checklist" class="hidden">
+            <div class="checklist-card">
+                <div class="session-done-header">
+                    <div class="icon">🎉</div>
+                    <h2>¡Tentativa de Exposición Finalizada!</h2>
+                    <p id="stat-tiempo-total-text">Tiempo total registrado: —</p>
+                </div>
+                <div class="stat-chips">
+                    <div class="stat-chip">
+                        <div class="val" id="stat-slides">15</div>
+                        <div class="lbl">Diapositivas</div>
+                    </div>
+                    <div class="stat-chip">
+                        <div class="val" id="stat-tiempo">—</div>
+                        <div class="lbl">Tiempo Total</div>
+                    </div>
+                    <div class="stat-chip">
+                        <div class="val" id="stat-promedio">—</div>
+                        <div class="lbl">Promedio / Slide</div>
+                    </div>
+                    <div class="stat-chip">
+                        <div class="val" id="stat-wpm">—</div>
+                        <div class="lbl">Ritmo WPM</div>
+                    </div>
+                </div>
+
+                <h3 class="checklist-title">Autoevaluación Rápida de Autoeficacia</h3>
+                <p class="checklist-sub">Completa esta escala reflexiva para cruzar tus sensaciones con los datos acústicos analizados.</p>
+
+                <div class="question-group">
+                    <p>1. Gestión del tiempo (¿Te mantuviste cerca de 1:00 por diapositiva?)</p>
+                    <div class="radio-options">
+                        <label><input type="radio" name="q1" value="Si" checked> ✅ Sí, muy equilibrado</label>
+                        <label><input type="radio" name="q1" value="Parcialmente"> ⚠️ Con dificultad en algunas</label>
+                        <label><input type="radio" name="q1" value="No"> ❌ No, me desfasé</label>
+                    </div>
+                </div>
+                <div class="question-group">
+                    <p>2. Pacing y Respiración (¿Mantuviste ritmo pausado con apoyo diafragmático?)</p>
+                    <div class="radio-options">
+                        <label><input type="radio" name="q2" value="Si" checked> ✅ Sí, respiración controlada</label>
+                        <label><input type="radio" name="q2" value="Parcialmente"> ⚠️ A ratos me aceleré</label>
+                        <label><input type="radio" name="q2" value="No"> ❌ Hablé con taquipsiquia</label>
+                    </div>
+                </div>
+                <div class="question-group">
+                    <p>3. Pronunciación & Resiliencia (¿Gestionaste con calma los tropiezos o trabas?)</p>
+                    <div class="radio-options">
+                        <label><input type="radio" name="q3" value="Si" checked> ✅ Continué sin tensión</label>
+                        <label><input type="radio" name="q3" value="Parcialmente"> ⚠️ Pequeños titubeos</label>
+                        <label><input type="radio" name="q3" value="No"> ❌ Me quedé bloqueada</label>
+                    </div>
+                </div>
+                <div class="question-group">
+                    <p>4. Foco de Oratoria (¿Priorizaste transmitir la esencia de tu TFM?)</p>
+                    <div class="radio-options">
+                        <label><input type="radio" name="q4" value="Si" checked> ✅ Foco total en el TFM</label>
+                        <label><input type="radio" name="q4" value="Parcialmente"> ⚠️ Dudé de mis palabras</label>
+                        <label><input type="radio" name="q4" value="No"> ❌ Excesiva autocrítica</label>
+                    </div>
+                </div>
+                <div class="question-group">
+                    <p>5. Nivel de Ansiedad Percibido (1 = Muy tranquila · 5 = Muy nerviosa)</p>
+                    <div class="radio-options">
+                        <label><input type="radio" name="q5" value="1"> 😌 1</label>
+                        <label><input type="radio" name="q5" value="2"> 🙂 2</label>
+                        <label><input type="radio" name="q5" value="3" checked> 😐 3</label>
+                        <label><input type="radio" name="q5" value="4"> 😰 4</label>
+                        <label><input type="radio" name="q5" value="5"> 😱 5</label>
+                    </div>
+                </div>
+
+                <button class="btn-submit" onclick="calcularYMostrarInforme()">📊 Generar Informe de Puntuación & Análisis de Fallos →</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA: INFORME DE ACTUACIÓN, PUNTUACIÓN Y AUDITORÍA DE FALLOS -->
+        <div id="pantalla-informe" class="hidden">
+            <div class="checklist-card">
+                
+                <div class="session-done-header" style="margin-bottom:20px;">
+                    <div class="icon">📋</div>
+                    <h2>Auditoría de Oratoria & Puntuación del Tribunal</h2>
+                    <p id="informe-fecha">—</p>
+                </div>
+
+                <!-- REPRODUCTOR DE LA TENTATIVA (VÍDEO / AUDIO) -->
+                <div class="media-review-card" id="media-review-section">
+                    <div class="media-review-header">
+                        <div class="media-badge-tag" id="media-type-badge">📹 Grabación en Vídeo de la Tentativa</div>
+                        <div style="font-size:.8rem;color:var(--text-muted);" id="media-duration-text">Duración: 15:00</div>
+                    </div>
+
+                    <div class="player-wrapper">
+                        <video id="review-video" controls playsinline class="hidden"></video>
+                        <audio id="review-audio" controls class="hidden"></audio>
+                    </div>
+
+                    <!-- Línea de tiempo para saltar por diapositivas -->
+                    <div class="timeline-container">
+                        <div class="timeline-title">Navegar por Diapositivas (haz clic para saltar al instante en la grabación):</div>
+                        <div class="timeline-pills" id="timeline-pills"></div>
+                    </div>
+
+                    <div class="media-actions-row">
+                        <button class="btn-download-media" id="btn-download-recording" onclick="descargarGrabacion()">
+                            ⬇ Descargar Grabación de esta Tentativa (<span id="download-ext-label">.webm</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ANILLO DE PUNTUACIÓN GLOBAL (0 A 10) -->
+                <div class="score-ring-wrap">
+                    <div class="score-ring">
+                        <svg width="165" height="165" viewBox="0 0 170 170">
+                            <circle cx="85" cy="85" r="72" fill="none" stroke="var(--border)" stroke-width="13"/>
+                            <circle id="score-arc" cx="85" cy="85" r="72" fill="none"
+                                stroke="var(--success)" stroke-width="13" stroke-linecap="round"
+                                stroke-dasharray="452" stroke-dashoffset="452"
+                                style="transition:stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1),stroke .4s"/>
+                        </svg>
+                        <div class="score-ring-text">
+                            <div class="score-number" id="score-num">—</div>
+                            <div class="score-label">PUNTUACIÓN / 10</div>
+                        </div>
+                    </div>
+                    <div class="score-verdict" id="score-verdict"></div>
+                </div>
+
+                <!-- BARRAS DE LAS 6 DIMENSIONES EVALUADAS -->
+                <div class="score-bars" id="score-bars"></div>
+
+                <!-- ── SECCIÓN CENTRAL: AUDITORÍA DE FALLOS OBSERVADOS ── -->
+                <div class="failures-audit-section">
+                    <div class="failures-audit-header">
+                        <div class="failures-title">
+                            <span>🔍 Auditoría Detallada de Fallos Observados</span>
+                        </div>
+                        <div class="failures-counters" id="failures-counters">
+                            <span class="counter-badge total" id="cnt-total">Total: 0</span>
+                            <span class="counter-badge crit" id="cnt-crit">0 Graves</span>
+                            <span class="counter-badge warn" id="cnt-warn">0 Moderados</span>
+                            <span class="counter-badge mild" id="cnt-mild">0 Leves</span>
+                        </div>
+                    </div>
+
+                    <!-- Filtros por tipo de fallo -->
+                    <div class="failures-filters">
+                        <button class="fail-filter-btn active" onclick="filtrarFallos('todos', this)">Todos</button>
+                        <button class="fail-filter-btn" onclick="filtrarFallos('entonacion', this)">🎤 Entonación & Modulación</button>
+                        <button class="fail-filter-btn" onclick="filtrarFallos('muletilla', this)">🗣️ Pronunciación & Muletillas</button>
+                        <button class="fail-filter-btn" onclick="filtrarFallos('ritmo', this)">⚡ Ritmo & Pausas</button>
+                        <button class="fail-filter-btn" onclick="filtrarFallos('tiempo', this)">⏱️ Tiempos por Slide</button>
+                    </div>
+
+                    <!-- Lista de tarjetas de fallos -->
+                    <div class="failures-list" id="failures-list"></div>
+
+                    <!-- Añadir observación manual de la estudiante o tutor -->
+                    <div class="manual-obs-box">
+                        <span style="font-size:.78rem;color:var(--text-muted);font-weight:600;">➕ Anotar fallo propio al ver la grabación:</span>
+                        <input type="text" id="manual-obs-text" class="manual-obs-input" placeholder="Ej: Mirada hacia abajo en el minuto 03:20 o dicción confusa...">
+                        <button class="btn-add-obs" onclick="agregarObservacionManual()">Agregar al Informe</button>
+                    </div>
+                </div>
+
+                <!-- TRANSCRIPCIÓN COMPLETA CON MULETILLAS RESALTADAS -->
+                <div class="transcript-accordion">
+                    <details>
+                        <summary class="transcript-summary">
+                            <span>📝 Transcripción Textual de la Exposición (con muletillas resaltadas)</span>
+                            <span style="font-size:.75rem;color:var(--primary-lt);">Ver transcripción completa ▾</span>
+                        </summary>
+                        <div class="transcript-body" id="transcript-body">
+                            No se generó texto de transcripción o el micrófono no transmitió voz reconocible.
+                        </div>
+                    </details>
+                </div>
+
+                <!-- PUNTOS FUERTES Y RECOMENDACIONES -->
+                <div class="report-section">
+                    <h4 style="color:var(--success);">✅ Puntos Fuertes Observados</h4>
+                    <div class="report-items" id="report-positivos"></div>
+                </div>
+                <div class="report-section">
+                    <h4 style="color:var(--accent);">🎯 Áreas Clave de Mejora Inmediata</h4>
+                    <div class="report-items" id="report-mejorar"></div>
+                </div>
+                <div class="report-section">
+                    <h4 style="color:var(--primary-lt);">💡 Recomendaciones Técnicas para el Tribunal de la UE</h4>
+                    <div class="report-items" id="report-recomendaciones"></div>
+                </div>
+
+                <div class="report-bottom-actions">
+                    <button class="btn-save-report" onclick="guardarChecklist()">💾 Guardar Tentativa en el Historial</button>
+                    <button class="btn-print-report" onclick="window.print()">🖨️ Imprimir / Guardar Informe PDF</button>
+                    <button class="btn-new-session" onclick="reiniciarEntrenamiento()">▶ Iniciar Nueva Tentativa de Ensayo</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PANEL 2: HISTORIAL ACUMULADO -->
+    <section id="panel-historial" class="tab-panel" role="tabpanel">
+        <div class="checklist-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+                <div>
+                    <h3 class="checklist-title" style="margin-bottom:3px;">📊 Historial Acumulado de Tentativas</h3>
+                    <p class="checklist-sub" style="margin:0;">Progreso de oratoria, entonación, pronunciación y reducción de fallos.</p>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-history" onclick="exportarCSV()">📥 Exportar CSV Detallado</button>
+                    <button class="btn-history" style="color:var(--danger);border-color:rgba(239,68,68,.3);" onclick="borrarHistorial()">🗑️ Borrar Historial</button>
+                </div>
+            </div>
+            <div id="history-content"></div>
+        </div>
+    </section>
+</div>
+
+<script>
+/* ── DIAPOSITIVAS DEL TFM ANTE EL TRIBUNAL DE LA UE ─────────────── */
+const SLIDES = [
+    { 
+        title: "Diapositiva 1: Portada, Título y Presentación", 
+        content: "Saluda formalmente al tribunal de la UE. Preséntate con tu nombre e institución. Voz pausada y firme desde el primer segundo. Proyecta confianza y seguridad.", 
+        phrase: "Estimados miembros del tribunal, buenos días. Mi nombre es Paula Regina Santana Moreira y hoy tengo el honor de presentarles la defensa de mi Trabajo Fin de Máster titulado: Aplicación Web de Auditoría Higiénico-Sanitaria en la Industria Alimentaria.",
+        keywords: ["tribunal", "defensa", "máster", "título", "presentación", "auditoría", "alimentaria", "honor"]
+    },
+    { 
+        title: "Diapositiva 2: Introducción y Contexto", 
+        content: "Define claramente el problema que motivó tu investigación. Enfatiza su relevancia en el marco de la Unión Europea y la seguridad alimentaria.", 
+        phrase: "Para iniciar, es fundamental situarnos en el contexto normativo europeo actual, donde la garantía de la inocuidad alimentaria y el cumplimiento del Reglamento (CE) 852/2004 exigen herramientas de control digital rigurosas y ágiles.",
+        keywords: ["contexto", "problema", "unión europea", "normativa", "inocuidad", "seguridad", "alimentaria"]
+    },
+    { 
+        title: "Diapositiva 3: Marco Teórico y Justificación", 
+        content: "Sintetiza la literatura clave. No listes autores sin sentido; destaca los pilares científicos y legales del diseño higiénico y APPCC.", 
+        phrase: "La base teórica de este trabajo se sustenta en tres pilares clave: la metodología APPCC, el principio de presunción de no conformidad del Codex Alimentarius y las directivas de trazabilidad sanitaria de la Unión Europea.",
+        keywords: ["marco", "teórico", "literatura", "appcc", "normas", "criterios", "justificación"]
+    },
+    { 
+        title: "Diapositiva 4: Preguntas de Investigación / Hipótesis", 
+        content: "Plantea de forma directa las preguntas formuladas o las hipótesis de partida que pretendes verificar en este estudio.", 
+        phrase: "A partir del marco establecido, nos planteamos: ¿Es viable digitalizar una rúbrica de campo de 30 puntos de control crítico garantizando la reproducibilidad del dictamen y mitigando sesgos humanos?",
+        keywords: ["hipótesis", "preguntas", "investigación", "cuestiones", "digitalizar", "rúbrica"]
+    },
+    { 
+        title: "Diapositiva 5: Objetivos Generales y Específicos", 
+        content: "Muestra de forma estructurada qué buscaba lograr tu investigación. Enfatiza la coherencia entre el objetivo general y los específicos.", 
+        phrase: "Para responder a estas cuestiones, este trabajo se marcó como objetivo principal desarrollar y validar un aplicativo web interactivo para la inspección higiénico-sanitaria con algoritmo de puntuación estandarizado.",
+        keywords: ["objetivos", "general", "específicos", "desarrollar", "validar", "aplicativo"]
+    },
+    { 
+        title: "Diapositiva 6: Metodología - Diseño de la Investigación", 
+        content: "Explica con rigor científico el tipo de diseño metodológico empleado: enfoque mixto, desarrollo de software aplicado y validación de campo.", 
+        phrase: "En cuanto al diseño metodológico, hemos optado por un enfoque tecnológico aplicado y cuantitativo, estructurado en arquitectura cliente-servidor nativa y diseño responsivo.",
+        keywords: ["metodología", "diseño", "enfoque", "arquitectura", "desarrollo", "cuantitativo"]
+    },
+    { 
+        title: "Diapositiva 7: Metodología - Muestra y Procedimiento", 
+        content: "Expón los criterios de selección de tu muestra o puntos de control evaluados, y las fases lógicas del procedimiento empírico.", 
+        phrase: "El procedimiento empírico constó de tres bloques de inspección: infraestructuras físicas, prácticas higiénicas del personal y planes de autocontrol, integrando 3 puntos críticos de override normativo.",
+        keywords: ["muestra", "procedimiento", "fases", "inspección", "bloques", "puntos críticos"]
+    },
+    { 
+        title: "Diapositiva 8: Resultados - Hallazgo Principal 1 (Algoritmo)", 
+        content: "Muestra tu primer descubrimiento más potente. Apóyate en el cálculo del Índice de Conformidad y la exclusión de ítems N/A.", 
+        phrase: "Pasando ahora al análisis de los resultados, el primer hallazgo clave valida el algoritmo de conformidad proporcional: la exclusión dinámica de ítems N/A evita penalizaciones artificiales en los establecimientos.",
+        keywords: ["resultados", "primer", "hallazgo", "algoritmo", "índice", "conformidad", "proporcional"]
+    },
+    { 
+        title: "Diapositiva 9: Resultados - Hallazgo Principal 2 (Puntos Críticos)", 
+        content: "Expón cómo opera el mecanismo de fallo crítico en agua potable, exclusión de manipuladores y cadena de frío.", 
+        phrase: "Asimismo, resulta de especial relevancia que el mecanismo de Punto Crítico anula de inmediato dictámenes favorables si se vulneran pilares irrenunciables como el suministro de agua o la cadena de frío.",
+        keywords: ["resultados", "hallazgo", "crítico", "agua potable", "temperatura", "dictamen"]
+    },
+    { 
+        title: "Diapositiva 10: Resultados - Hallazgo Principal 3 (Trazabilidad)", 
+        content: "Haz una síntesis de la emisión de informes automáticos, firmas digitales y cálculo instantáneo del dictamen.", 
+        phrase: "Finalmente, la generación instantánea de informes periciales con firmas y hash de integridad reduce el tiempo de redacción de actas de inspección en más de un 70%.",
+        keywords: ["resultados", "síntesis", "informes", "trazabilidad", "eficiencia", "actas"]
+    },
+    { 
+        title: "Diapositiva 11: Discusión - Interpretación de Resultados", 
+        content: "Interpreta tus hallazgos. Conéctalos directamente con el marco teórico y la literatura sobre digitalización sanitaria.", 
+        phrase: "A la luz de los resultados, la interpretación confirma que la digitalización elimina la dispersión entre evaluadores, alineándose con las directrices más recientes de la Autoridad Europea de Seguridad Alimentaria (EFSA).",
+        keywords: ["discusión", "interpretación", "efsa", "literatura", "consistencia", "evaluadores"]
+    },
+    { 
+        title: "Diapositiva 12: Limitaciones del Estudio", 
+        content: "Demuestra madurez académica reconociendo honestamente los sesgos y limitaciones tecnológicas de tu trabajo.", 
+        phrase: "A pesar del rigor aplicado, es sumamente importante señalar que este estudio presenta limitaciones asociadas a la conectividad en entornos industriales subterráneos y el tamaño muestral de validación en campo.",
+        keywords: ["limitaciones", "sesgos", "madurez", "estudio", "conectividad", "muestra"]
+    },
+    { 
+        title: "Diapositiva 13: Líneas de Investigación Futura", 
+        content: "Abre el camino para que otros investigadores o el tribunal vean qué nuevas oportunidades de estudio emanan de tu TFM.", 
+        phrase: "No obstante, estas limitaciones abren prometedoras líneas futuras, como la integración de visión por computador para detección visual automática de no conformidades y sensores IoT en tiempo real.",
+        keywords: ["futuras", "líneas", "investigación", "visión", "iot", "sensores", "oportunidades"]
+    },
+    { 
+        title: "Diapositiva 14: Conclusiones Clave", 
+        content: "Expón los mensajes definitivos e incontestables de tu trabajo. Responde con absoluta claridad a los objetivos planteados al inicio.", 
+        phrase: "Como conclusiones definitivas: primero, la herramienta es plenamente conforme con el marco legal de la UE; segundo, aporta fiabilidad técnica y reproducibilidad matemática; y tercero, optimiza radicalmente la auditoría.",
+        keywords: ["conclusiones", "definitivas", "puntos clave", "conforme", "fiabilidad", "optimización"]
+    },
+    { 
+        title: "Diapositiva 15: Agradecimientos y Cierre Formal", 
+        content: "Agradece sinceramente la atención del tribunal. Da paso formalmente a su ronda de preguntas. Termina con firmeza, contacto visual y una sonrisa.", 
+        phrase: "Con esto concluyo mi exposición académica. Agradezco sinceramente su atención y quedo a su entera disposición para responder a sus amables preguntas, observaciones o comentarios. Muchas gracias.",
+        keywords: ["agradecimientos", "cierre", "preguntas", "tribunal", "disposición", "gracias"]
+    }
+];
+
+/* ── ESTADO GLOBAL DE LA APLICACIÓN ─────────────────────────────── */
+let estado = {
+    activo: false,
+    pausado: false,
+    modoGrabacion: 'video', // 'video' | 'audio'
+    facingMode: 'user', // 'user' (frontal/selfie) | 'environment' (trasera)
+    diapositivaActual: 1,
+    tiempoTotalRestante: 900, // 15 minutos
+    tiempoElapsado: 0,
+    tiempoSlide: 60,
+    intervalo: null,
+    
+    // Media & Recorder
+    stream: null,
+    mediaRecorder: null,
+    recordedChunks: [],
+    recordedBlob: null,
+    recordedURL: null,
+    
+    // Tiempos por diapositiva
+    slideTimestamps: [],
+    slideStartSec: 0,
+    
+    // Audio analysis (Web Audio API)
+    audioCtx: null,
+    analyser: null,
+    freqData: null,
+    timeData: null,
+    animFrameId: null,
+    recentCentroids: [],
+    lastMonotoneSec: 0,
+    lastSilenceSec: 0,
+    silenceCounter: 0,
+    monotoneCounter: 0,
+    
+    // Speech Recognition
+    recognition: null,
+    transcriptPieces: [],
+    fullTranscript: '',
+    palabrasPorSlide: {},
+    totalPalabras: 0,
+    wpmActual: 0,
+    
+    // Fallos Observados
+    fallosDetectados: [],
+    filtroActivo: 'todos',
+    
+    // Resultados calculados
+    tiempoFinalSegundos: 0,
+    dimensionesPuntuacion: [],
+    puntuacionGlobal: 0
+};
+
+const $ = id => document.getElementById(id);
+
+/* ── NAVEGACIÓN ENTRE TABS ──────────────────────────────────────── */
+function mostrarTab(id) {
+    ['entrenar', 'historial'].forEach(t => {
+        $('tab-' + t).classList.toggle('active', t === id);
+        $('panel-' + t).classList.toggle('active', t === id);
+    });
+    if (id === 'historial') renderHistorial();
+}
+
+/* ── SELECTOR DE MODO DE GRABACIÓN ──────────────────────────────── */
+function seleccionarModoGrabacion(modo) {
+    if (estado.activo) return;
+    estado.modoGrabacion = modo;
+    $('opt-video').classList.toggle('selected', modo === 'video');
+    $('opt-audio').classList.toggle('selected', modo === 'audio');
+    document.querySelector(`input[name="modo-rec"][value="${modo}"]`).checked = true;
+    localStorage.setItem('tfm_modo_grabacion', modo);
+}
+
+// Cargar preferencia previa
+const modoGuardado = localStorage.getItem('tfm_modo_grabacion');
+if (modoGuardado === 'audio' || modoGuardado === 'video') {
+    seleccionarModoGrabacion(modoGuardado);
+}
+
+/* ── FORMATEO DE TIEMPO ─────────────────────────────────────────── */
+function fmtMM_SS(seg) {
+    const s = Math.abs(Math.round(seg));
+    const m = Math.floor(s / 60).toString().padStart(2, '0');
+    const ss = (s % 60).toString().padStart(2, '0');
+    return `${m}:${ss}`;
+}
+
+/* ── RENDER DE BARRA DE PUNTOS DE SLIDES ────────────────────────── */
+function renderBarraSlides() {
+    const bar = $('slides-progress-bar');
+    bar.innerHTML = '';
+    for (let i = 1; i <= 15; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'slide-dot';
+        if (i < estado.diapositivaActual) dot.classList.add('done');
+        else if (i === estado.diapositivaActual) dot.classList.add('current');
+        dot.title = `Slide ${i}: ${SLIDES[i-1].title}`;
+        dot.onclick = () => {
+            // Permitir navegación táctil si ya avanzó
+            if (estado.activo && i <= estado.diapositivaActual + 1) {
+                while (estado.diapositivaActual < i) siguienteDiapositiva();
+            }
+        };
+        bar.appendChild(dot);
+    }
+}
+
+/* ── CUENTA ATRÁS 3-2-1 ─────────────────────────────────────────── */
+function mostrarCuentaAtras(callback) {
+    const overlay = $('countdown-overlay');
+    const num = $('countdown-number');
+    overlay.classList.remove('hidden');
+    overlay.style.opacity = '1';
+    let cuenta = 3;
+    num.textContent = cuenta;
+    const tick = setInterval(() => {
+        cuenta--;
+        if (cuenta <= 0) {
+            clearInterval(tick);
+            num.textContent = '¡YA!';
+            setTimeout(() => {
+                overlay.classList.add('fade-out');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    overlay.classList.remove('fade-out');
+                    callback();
+                }, 400);
+            }, 550);
+        } else {
+            num.textContent = cuenta;
+            num.style.animation = 'none';
+            num.offsetHeight;
+            num.style.animation = 'pop .7s ease-out';
+        }
+    }, 750);
+}
+
+/* ── PREPARAR E INICIAR ENTRENAMIENTO ───────────────────────────── */
+function prepararInicio() {
+    $('btn-start').disabled = true;
+    mostrarCuentaAtras(iniciarEntrenamiento);
+}
+
+async function iniciarEntrenamiento() {
+    estado.activo = true;
+    estado.pausado = false;
+    estado.diapositivaActual = 1;
+    estado.tiempoTotalRestante = 900;
+    estado.tiempoElapsado = 0;
+    estado.tiempoSlide = 60;
+    estado.slideStartSec = 0;
+    estado.slideTimestamps = [];
+    estado.recordedChunks = [];
+    estado.recordedBlob = null;
+    estado.fallosDetectados = [];
+    estado.transcriptPieces = [];
+    estado.fullTranscript = '';
+    estado.palabrasPorSlide = {};
+    estado.totalPalabras = 0;
+    estado.wpmActual = 0;
+    estado.silenceCounter = 0;
+    estado.monotoneCounter = 0;
+    estado.recentCentroids = [];
+
+    // Ajustar UI para sesión activa
+    $('mode-selector-card').classList.add('hidden');
+    $('btn-start').classList.add('hidden');
+    $('btn-next').classList.remove('hidden');
+    $('btn-pause').classList.remove('hidden');
+    $('btn-pause').textContent = '⏸ Pausar Grabación';
+    $('btn-pause').className = 'btn-pause';
+    $('kb-hint').classList.remove('hidden');
+    $('live-media-panel').classList.remove('hidden');
+    
+    const arena = $('live-arena');
+    arena.classList.add('dual-mode');
+
+    // Iniciar hardware y grabación
+    await iniciarDispositivosYGrabacion();
+
+    actualizarSlideUI();
+    renderBarraSlides();
+
+    // Cronómetro principal cada 1s
+    estado.intervalo = setInterval(tickTemporizador, 1000);
+}
+
+/* ── INICIALIZACIÓN DE CÁMARA, MICRÓFONO Y RECORDER ─────────────── */
+async function iniciarDispositivosYGrabacion() {
+    const quiereVideo = (estado.modoGrabacion === 'video');
+    const videoBox = $('video-box');
+    const camVideo = $('live-camera-video');
+    const camControls = $('cam-controls');
+
+    if (quiereVideo) {
+        videoBox.classList.remove('hidden');
+        camControls.classList.remove('hidden');
+        $('rec-label').textContent = 'REC · VÍDEO ACTIVO';
+    } else {
+        videoBox.classList.add('hidden');
+        camControls.classList.add('hidden');
+        $('rec-label').textContent = 'REC · VOZ ACTIVA';
+    }
+
+    try {
+        let constraints = {
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+            }
+        };
+
+        if (quiereVideo) {
+            constraints.video = {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: estado.facingMode
+            };
+        }
+
+        try {
+            estado.stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (mediaErr) {
+            if (quiereVideo) {
+                console.warn('Cámara web no disponible o denegada, reintentando solo audio:', mediaErr);
+                alert('⚠️ No se pudo acceder a la cámara web. Continuando la tentativa en modo Solo Audio.');
+                videoBox.classList.add('hidden');
+                camControls.classList.add('hidden');
+                estado.modoGrabacion = 'audio';
+                estado.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } else {
+                throw mediaErr;
+            }
+        }
+
+        if (estado.modoGrabacion === 'video' && camVideo) {
+            camVideo.srcObject = estado.stream;
+        }
+
+        // Selección inteligente de códec
+        let mimeType = '';
+        if (estado.modoGrabacion === 'video') {
+            const videoCodecs = [
+                'video/webm;codecs=vp9,opus',
+                'video/webm;codecs=vp8,opus',
+                'video/webm',
+                'video/mp4'
+            ];
+            mimeType = videoCodecs.find(c => MediaRecorder.isTypeSupported(c)) || '';
+        } else {
+            const audioCodecs = [
+                'audio/webm;codecs=opus',
+                'audio/webm',
+                'audio/ogg',
+                'audio/wav'
+            ];
+            mimeType = audioCodecs.find(c => MediaRecorder.isTypeSupported(c)) || '';
+        }
+
+        const options = mimeType ? { mimeType } : {};
+        estado.mediaRecorder = new MediaRecorder(estado.stream, options);
+
+        estado.mediaRecorder.ondataavailable = e => {
+            if (e.data && e.data.size > 0) {
+                estado.recordedChunks.push(e.data);
+            }
+        };
+
+        estado.mediaRecorder.onstop = () => {
+            const actualMime = estado.mediaRecorder.mimeType || (estado.modoGrabacion === 'video' ? 'video/webm' : 'audio/webm');
+            estado.recordedBlob = new Blob(estado.recordedChunks, { type: actualMime });
+            estado.recordedURL = URL.createObjectURL(estado.recordedBlob);
+        };
+
+        estado.mediaRecorder.start(1000); // Fragmentos de 1 segundo
+
+        // Inicializar analizador acústico Web Audio API
+        iniciarAnalizadorAcustico(estado.stream);
+
+        // Inicializar Speech Recognition para muletillas y WPM
+        iniciarSpeechRecognition();
+
+    } catch (err) {
+        console.error('Error al acceder a dispositivos:', err);
+        alert('⚠️ No se pudo acceder al micrófono o cámara. El entrenamiento continuará con temporizador visual.');
+    }
+}
+
+function toggleMirrorVideo() {
+    const v = $('live-camera-video');
+    if (v) v.classList.toggle('mirrored');
+}
+
+/* ── CAMBIO DE CÁMARA FRONTAL / TRASERA EN MÓVILES Y TABLETAS ───── */
+async function cambiarCamaraFrontalTrasera() {
+    if (!estado.activo || estado.modoGrabacion !== 'video' || !estado.stream) return;
+    estado.facingMode = (estado.facingMode === 'user') ? 'environment' : 'user';
+
+    try {
+        const videoTrack = estado.stream.getVideoTracks()[0];
+        if (videoTrack) {
+            videoTrack.stop();
+            const newStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: estado.facingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            });
+            const newVideoTrack = newStream.getVideoTracks()[0];
+            estado.stream.removeTrack(videoTrack);
+            estado.stream.addTrack(newVideoTrack);
+
+            const camVideo = $('live-camera-video');
+            if (camVideo) {
+                camVideo.srcObject = estado.stream;
+                if (estado.facingMode === 'environment') {
+                    camVideo.classList.remove('mirrored');
+                } else {
+                    camVideo.classList.add('mirrored');
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('No se pudo alternar la cámara frontal/trasera:', e);
+    }
+}
+
+/* ── ANALIZADOR ACÚSTICO WEB AUDIO API (ENTONACIÓN & VOLUMEN) ───── */
+function iniciarAnalizadorAcustico(stream) {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        estado.audioCtx = new AudioContext();
+        
+        // Desbloqueo en navegadores móviles (iOS Safari / Chrome)
+        if (estado.audioCtx.state === 'suspended') {
+            estado.audioCtx.resume();
+        }
+
+        estado.analyser = estado.audioCtx.createAnalyser();
+        estado.analyser.fftSize = 512;
+        estado.analyser.smoothingTimeConstant = 0.85;
+
+        const source = estado.audioCtx.createMediaStreamSource(stream);
+        source.connect(estado.analyser);
+
+        estado.freqData = new Uint8Array(estado.analyser.frequencyBinCount);
+        estado.timeData = new Uint8Array(estado.analyser.fftSize);
+
+        loopAnalizadorAcustico();
+    } catch (e) {
+        console.warn('AudioContext no inicializado:', e);
+    }
+}
+
+function loopAnalizadorAcustico() {
+    if (!estado.activo) return;
+
+    if (estado.analyser && estado.freqData && estado.timeData) {
+        estado.analyser.getByteFrequencyData(estado.freqData);
+        estado.analyser.getByteTimeDomainData(estado.timeData);
+
+        // 1. Cálculo de RMS (Volumen)
+        let sumSquares = 0;
+        for (let i = 0; i < estado.timeData.length; i++) {
+            const val = (estado.timeData[i] - 128) / 128;
+            sumSquares += val * val;
+        }
+        const rms = Math.sqrt(sumSquares / estado.timeData.length);
+
+        // Actualizar Vúmetro en UI
+        const vuFill = $('vu-fill');
+        const vuLabel = $('vu-label');
+        const vuPct = Math.min(100, Math.round(rms * 450));
+        if (vuFill) vuFill.style.width = vuPct + '%';
+
+        let hablando = false;
+        if (rms < 0.015) {
+            if (vuLabel) vuLabel.textContent = 'Silencio';
+        } else if (rms < 0.04) {
+            hablando = true;
+            if (vuLabel) vuLabel.textContent = '🔉 Suave';
+        } else if (rms <= 0.28) {
+            hablando = true;
+            if (vuLabel) vuLabel.textContent = '🎙️ Óptimo';
+        } else {
+            hablando = true;
+            if (vuLabel) vuLabel.textContent = '📢 Fuerte';
+        }
+
+        // 2. Cálculo de Inflexión y Entonación (Centroide espectral & Pitch variation)
+        let num = 0, den = 0;
+        for (let i = 1; i < estado.freqData.length; i++) {
+            num += i * estado.freqData[i];
+            den += estado.freqData[i];
+        }
+        const centroid = den > 0 ? (num / den) : 0;
+
+        const pitchBadge = $('badge-pitch');
+
+        if (hablando) {
+            estado.recentCentroids.push(centroid);
+            if (estado.recentCentroids.length > 25) {
+                estado.recentCentroids.shift();
+            }
+
+            // Desviación estándar de los centroides en la ventana reciente
+            if (estado.recentCentroids.length >= 10) {
+                const mean = estado.recentCentroids.reduce((a, b) => a + b, 0) / estado.recentCentroids.length;
+                const variance = estado.recentCentroids.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / estado.recentCentroids.length;
+                const stdDev = Math.sqrt(variance);
+
+                if (stdDev > 9.5) {
+                    if (pitchBadge) {
+                        pitchBadge.className = 'badge-pitch dynamic';
+                        pitchBadge.textContent = '✨ Dinámica';
+                    }
+                    estado.monotoneCounter = 0;
+                } else if (stdDev >= 4.5) {
+                    if (pitchBadge) {
+                        pitchBadge.className = 'badge-pitch';
+                        pitchBadge.textContent = '😐 Normal';
+                    }
+                    estado.monotoneCounter = 0;
+                } else {
+                    if (pitchBadge) {
+                        pitchBadge.className = 'badge-pitch flat';
+                        pitchBadge.textContent = '⚠️ Monótono';
+                    }
+                    estado.monotoneCounter++;
+                    // Si se mantiene monótono por > 22 segundos consecutivos
+                    if (estado.monotoneCounter > 22 && (estado.tiempoElapsado - estado.lastMonotoneSec > 35)) {
+                        registrarFallo({
+                            tipo: 'entonacion',
+                            categoria: 'Entonación & Modulación',
+                            gravedad: 'warn',
+                            segundo: estado.tiempoElapsado,
+                            slide: estado.diapositivaActual,
+                            descripcion: `Tono vocal plano y sostenidamente monótono durante más de 20s en la Diapositiva ${estado.diapositivaActual}.`,
+                            impacto: 'La monotonía prolongada induce desinterés en el tribunal y diluye la jerarquía de las conclusiones científicas.',
+                            consejo: 'Eleva la entonación en las afirmaciones de peso y modula con pausas respiratorias para dar ritmo al discurso.'
+                        });
+                        estado.lastMonotoneSec = estado.tiempoElapsado;
+                        estado.monotoneCounter = 0;
+                    }
+                }
+            }
+            estado.silenceCounter = 0;
+        } else {
+            // No está hablando: detectar silencios incómodos o bloqueos
+            if (pitchBadge) {
+                pitchBadge.className = 'badge-pitch silent';
+                pitchBadge.textContent = 'Pausa';
+            }
+            estado.silenceCounter++;
+            if (estado.silenceCounter > 4.5 && (estado.tiempoElapsado - estado.lastSilenceSec > 25)) {
+                registrarFallo({
+                    tipo: 'ritmo',
+                    categoria: 'Ritmo & Fluidez',
+                    gravedad: 'crit',
+                    segundo: estado.tiempoElapsado,
+                    slide: estado.diapositivaActual,
+                    descripcion: `Pausa no intencionada o bloqueo prolongado de más de 4.5 segundos en la Diapositiva ${estado.diapositivaActual}.`,
+                    impacto: 'Un silencio excesivo denota inseguridad o pérdida del hilo temático ante las preguntas o la exposición.',
+                    consejo: 'Apóyate de inmediato en la frase de apertura de la diapositiva o en conectores de enlace ("Pasando a considerar...", "En este sentido...").'
+                });
+                estado.lastSilenceSec = estado.tiempoElapsado;
+                estado.silenceCounter = 0;
+            }
+        }
+
+        // 3. Renderizar Canvas de Frecuencias
+        dibujarCanvasAcustico();
+    }
+
+    estado.animFrameId = requestAnimationFrame(loopAnalizadorAcustico);
+}
+
+function dibujarCanvasAcustico() {
+    const canvas = $('live-audio-canvas');
+    if (!canvas || !estado.freqData) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    const barCount = 36;
+    const barWidth = (width / barCount) - 2;
+    const step = Math.floor(estado.freqData.length / barCount);
+
+    for (let i = 0; i < barCount; i++) {
+        const val = estado.freqData[i * step] || 0;
+        const barHeight = (val / 255) * (height - 4);
+        const x = i * (barWidth + 2);
+        const y = height - barHeight;
+
+        const grad = ctx.createLinearGradient(0, height, 0, y);
+        grad.addColorStop(0, '#3b82f6');
+        grad.addColorStop(0.7, '#10b981');
+        grad.addColorStop(1, '#f59e0b');
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, barWidth, barHeight);
+    }
+}
+
+/* ── SPEECH RECOGNITION (ESPAÑOL) & DETECCIÓN DE MULETILLAS ─────── */
+function iniciarSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        console.warn('SpeechRecognition no está disponible en este navegador o sistema operativo móvil.');
+        return;
+    }
+
+    try {
+        estado.recognition = new SpeechRecognition();
+        estado.recognition.lang = 'es-ES';
+        estado.recognition.continuous = true;
+        estado.recognition.interimResults = true;
+        estado.recognition.maxAlternatives = 1;
+
+        estado.recognition.onresult = (event) => {
+            let textoInterino = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                const tr = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    procesarTextoFinal(tr);
+                } else {
+                    textoInterino += tr;
+                }
+            }
+            const boxText = $('live-speech-text');
+            if (boxText && textoInterino) {
+                boxText.textContent = textoInterino.slice(-140);
+            }
+        };
+
+        estado.recognition.onerror = (e) => {
+            console.warn('SpeechRecognition event error:', e.error);
+        };
+
+        estado.recognition.onend = () => {
+            // Reanudar automáticamente si sigue activa la sesión
+            if (estado.activo && !estado.pausado && estado.recognition) {
+                try { estado.recognition.start(); } catch (err) {}
+            }
+        };
+
+        estado.recognition.start();
+    } catch (e) {
+        console.warn('No se pudo arrancar SpeechRecognition:', e);
+    }
+}
+
+// Lista exhaustiva de muletillas y vacilaciones en oratoria académica
+const MULETILLAS_PATRONES = [
+    { regex: /\b(eh{1,5}|em{1,5}|estee?)\b/gi, nombre: 'Eh / Em / Este' },
+    { regex: /\b(o sea|o sea que)\b/gi, nombre: 'O sea' },
+    { regex: /\b(bueno pues|bueno)\b/gi, nombre: 'Bueno' },
+    { regex: /\b(digamos|básicamente)\b/gi, nombre: 'Digamos / Básicamente' },
+    { regex: /\b(en plan|vale)\b/gi, nombre: 'En plan / Vale' },
+    { regex: /\b(¿?sabes\??|¿?verdad\??)\b/gi, nombre: '¿Sabes? / ¿Verdad?' },
+    { regex: /\b(como que|por así decirlo)\b/gi, nombre: 'Por así decirlo' }
+];
+
+let ultimoFalloMuletillaSec = 0;
+
+function procesarTextoFinal(texto) {
+    estado.transcriptPieces.push({
+        slide: estado.diapositivaActual,
+        segundo: estado.tiempoElapsado,
+        texto: texto.trim()
+    });
+    estado.fullTranscript += ' ' + texto.trim();
+
+    // Contar palabras
+    const palabras = texto.trim().split(/\s+/).filter(w => w.length > 0);
+    estado.totalPalabras += palabras.length;
+    estado.palabrasPorSlide[estado.diapositivaActual] = (estado.palabrasPorSlide[estado.diapositivaActual] || 0) + palabras.length;
+
+    // Calcular WPM dinámico
+    const minTranscurridos = estado.tiempoElapsado / 60;
+    if (minTranscurridos > 0.15) {
+        estado.wpmActual = Math.round(estado.totalPalabras / minTranscurridos);
+        actualizarBadgeWPM(estado.wpmActual);
+    }
+
+    // Comprobar muletillas
+    MULETILLAS_PATRONES.forEach(pat => {
+        const matches = texto.match(pat.regex);
+        if (matches && matches.length > 0) {
+            mostrarToastMuletilla(matches[0]);
+            if (estado.tiempoElapsado - ultimoFalloMuletillaSec > 6) {
+                registrarFallo({
+                    tipo: 'muletilla',
+                    categoria: 'Pronunciación & Muletillas',
+                    gravedad: 'mild',
+                    segundo: estado.tiempoElapsado,
+                    slide: estado.diapositivaActual,
+                    descripcion: `Emisión de muletilla o vacilación verbal ("${matches[0]}") en la Diapositiva ${estado.diapositivaActual}.`,
+                    impacto: 'Las muletillas reiteradas restan firmeza y elocuencia académica ante el tribunal de la UE.',
+                    consejo: 'Sustituye la muletilla por una micropausa de 1 segundo en silencio. La pausa demuestra compostura y control.'
+                });
+                ultimoFalloMuletillaSec = estado.tiempoElapsado;
+            }
+        }
+    });
+
+    const boxText = $('live-speech-text');
+    if (boxText) boxText.textContent = texto.trim();
+}
+
+function mostrarToastMuletilla(palabra) {
+    const alertEl = $('live-speech-alert');
+    if (!alertEl) return;
+    alertEl.textContent = `⚠️ Muletilla: "${palabra}"`;
+    alertEl.classList.remove('hidden');
+    setTimeout(() => { alertEl.classList.add('hidden'); }, 2200);
+}
+
+function actualizarBadgeWPM(wpm) {
+    const el = $('badge-wpm');
+    if (!el) return;
+    el.textContent = `${wpm} WPM`;
+    if (wpm > 165) {
+        el.className = 'badge-wpm fast';
+    } else if (wpm < 95) {
+        el.className = 'badge-wpm slow';
+    } else {
+        el.className = 'badge-wpm good';
+    }
+}
+
+/* ── REGISTRO CENTRALIZADO DE FALLOS OBSERVADOS ─────────────────── */
+let nextFalloId = 1;
+function registrarFallo(falloObj) {
+    falloObj.id = nextFalloId++;
+    estado.fallosDetectados.push(falloObj);
+}
+
+/* ── TEMPORIZADOR Y TICKS ───────────────────────────────────────── */
+function tickTemporizador() {
+    if (!estado.activo || estado.pausado) return;
+
+    estado.tiempoTotalRestante--;
+    estado.tiempoElapsado++;
+    estado.tiempoSlide--;
+
+    // Timer REC de la cámara
+    const recTimer = $('rec-timer');
+    if (recTimer) recTimer.textContent = fmtMM_SS(estado.tiempoElapsado);
+
+    // Timer Total (Cuenta atrás de 15:00)
+    const timerTotal = $('timer-total');
+    const progTotal = $('prog-total');
+    const boxTotal = $('box-total');
+
+    timerTotal.textContent = fmtMM_SS(Math.max(estado.tiempoTotalRestante, 0));
+    const pct = ((900 - estado.tiempoTotalRestante) / 900) * 100;
+    progTotal.style.width = Math.min(pct, 100) + '%';
+
+    if (estado.tiempoTotalRestante <= 0) {
+        timerTotal.className = 'timer-value danger';
+        boxTotal.className = 'timer-box danger';
+        progTotal.className = 'progress-fill danger';
+    } else if (estado.tiempoTotalRestante <= 120) {
+        timerTotal.className = 'timer-value warn';
+        boxTotal.className = 'timer-box warn';
+        progTotal.className = 'progress-fill warn';
+    } else {
+        timerTotal.className = 'timer-value';
+        boxTotal.className = 'timer-box active';
+        progTotal.className = 'progress-fill';
+    }
+
+    // Timer Transcurrido
+    $('timer-elapsed').textContent = fmtMM_SS(estado.tiempoElapsado);
+    $('prog-elapsed').style.width = Math.min((estado.tiempoElapsado / 900) * 100, 100) + '%';
+
+    // Timer Diapositiva (Cuenta atrás de 1:00)
+    const timerSlide = $('timer-slide');
+    const boxSlide = $('box-slide');
+    const progSlide = $('prog-slide');
+
+    timerSlide.textContent = fmtMM_SS(Math.max(estado.tiempoSlide, 0));
+    const pctSlide = ((60 - estado.tiempoSlide) / 60) * 100;
+    progSlide.style.width = Math.min(pctSlide, 100) + '%';
+
+    if (estado.tiempoSlide <= 0) {
+        timerSlide.className = 'timer-value danger';
+        boxSlide.className   = 'timer-box danger';
+        progSlide.className  = 'progress-fill danger';
+    } else if (estado.tiempoSlide <= 15) {
+        timerSlide.className = 'timer-value warn';
+        boxSlide.className   = 'timer-box warn';
+        progSlide.className  = 'progress-fill warn';
+    } else {
+        timerSlide.className = 'timer-value';
+        boxSlide.className   = 'timer-box active';
+        progSlide.className  = 'progress-fill';
+    }
+
+    // Si expira el tiempo total de 15 minutos
+    if (estado.tiempoTotalRestante <= 0) {
+        finalizarEntrenamiento();
+    }
+}
+
+function togglePausa() {
+    if (!estado.activo) return;
+    const btn = $('btn-pause');
+    if (!estado.pausado) {
+        estado.pausado = true;
+        btn.textContent = '▶ Reanudar Grabación';
+        btn.classList.add('paused');
+        if (estado.mediaRecorder && estado.mediaRecorder.state === 'recording') {
+            estado.mediaRecorder.pause();
+        }
+    } else {
+        estado.pausado = false;
+        btn.textContent = '⏸ Pausar Grabación';
+        btn.classList.remove('paused');
+        if (estado.mediaRecorder && estado.mediaRecorder.state === 'paused') {
+            estado.mediaRecorder.resume();
+        }
+    }
+}
+
+/* ── AVANCE DE DIAPOSITIVAS ─────────────────────────────────────── */
+function actualizarSlideUI() {
+    const s = SLIDES[estado.diapositivaActual - 1];
+    $('slide-title').textContent = s.title;
+    $('slide-number').textContent = `${estado.diapositivaActual}/15`;
+    $('slide-content-text').innerHTML = s.content;
+    $('slide-phrase').textContent = s.phrase;
+    $('slide-phrase-container').classList.remove('hidden');
+
+    const sc = $('slide-card');
+    sc.classList.remove('slide-animate');
+    sc.offsetHeight;
+    sc.classList.add('slide-animate');
+}
+
+function siguienteDiapositiva() {
+    if (!estado.activo) return;
+
+    // Calcular duración de la diapositiva que acaba de finalizar
+    const duracionSlide = estado.tiempoElapsado - estado.slideStartSec;
+    const slideFinalizada = estado.diapositivaActual;
+
+    estado.slideTimestamps.push({
+        slide: slideFinalizada,
+        segundoInicio: estado.slideStartSec,
+        duracion: duracionSlide,
+        nombre: SLIDES[slideFinalizada - 1].title
+    });
+
+    // Auditoría de tiempo en esta diapositiva
+    if (duracionSlide > 75) {
+        registrarFallo({
+            tipo: 'tiempo',
+            categoria: 'Control del Cronómetro',
+            gravedad: 'warn',
+            segundo: estado.tiempoElapsado,
+            slide: slideFinalizada,
+            descripcion: `Exceso de tiempo en Diapositiva ${slideFinalizada}: duró ${fmtMM_SS(duracionSlide)} (+${duracionSlide - 60}s sobre el minuto óptimo).`,
+            impacto: 'Consumir demasiado tiempo en las primeras diapositivas deja sin tiempo las conclusiones y la defensa final.',
+            consejo: 'Condensa la explicación a 3 puntos esenciales y pasa de diapositiva exactamente al minuto.'
+        });
+    } else if (duracionSlide < 25 && slideFinalizada < 15) {
+        registrarFallo({
+            tipo: 'tiempo',
+            categoria: 'Control del Cronómetro',
+            gravedad: 'mild',
+            segundo: estado.tiempoElapsado,
+            slide: slideFinalizada,
+            descripcion: `Paso demasiado apresurado por la Diapositiva ${slideFinalizada} (${duracionSlide} segundos).`,
+            impacto: 'El tribunal puede percibir falta de profundidad o que se omiten aportaciones relevantes del trabajo.',
+            consejo: 'Dedica al menos 40-50 segundos a profundizar en el análisis antes de avanzar.'
+        });
+    }
+
+    if (estado.diapositivaActual < 15) {
+        estado.diapositivaActual++;
+        estado.slideStartSec = estado.tiempoElapsado;
+        estado.tiempoSlide = 60;
+        
+        $('timer-slide').textContent = '1:00';
+        $('timer-slide').className = 'timer-value';
+        $('box-slide').className = 'timer-box active';
+        $('prog-slide').style.width = '0%';
+        $('prog-slide').className = 'progress-fill';
+
+        actualizarSlideUI();
+        renderBarraSlides();
+    } else {
+        finalizarEntrenamiento();
+    }
+}
+
+/* ── FINALIZACIÓN DEL ENTRENAMIENTO ─────────────────────────────── */
+function finalizarEntrenamiento() {
+    estado.activo = false;
+    clearInterval(estado.intervalo);
+    if (estado.animFrameId) cancelAnimationFrame(estado.animFrameId);
+
+    // Guardar marca de la última diapositiva si no se guardó
+    if (estado.slideTimestamps.length < 15) {
+        const duracion = estado.tiempoElapsado - estado.slideStartSec;
+        estado.slideTimestamps.push({
+            slide: estado.diapositivaActual,
+            segundoInicio: estado.slideStartSec,
+            duracion: duracion,
+            nombre: SLIDES[estado.diapositivaActual - 1].title
+        });
+    }
+
+    estado.tiempoFinalSegundos = estado.tiempoElapsado;
+
+    // Detener grabador multimedia y liberar pistas de cámara/micrófono
+    if (estado.mediaRecorder && estado.mediaRecorder.state !== 'inactive') {
+        estado.mediaRecorder.stop();
+    }
+    if (estado.stream) {
+        estado.stream.getTracks().forEach(t => t.stop());
+    }
+    if (estado.recognition) {
+        try { estado.recognition.stop(); } catch (e) {}
+    }
+    if (estado.audioCtx) {
+        try { estado.audioCtx.close(); } catch (e) {}
+    }
+
+    // Estadísticas
+    const totalFmt = fmtMM_SS(estado.tiempoFinalSegundos);
+    const prom = Math.round(estado.tiempoFinalSegundos / 15);
+    const wpmFinal = estado.wpmActual || (estado.totalPalabras > 0 ? Math.round(estado.totalPalabras / (estado.tiempoFinalSegundos / 60)) : 130);
+
+    $('stat-tiempo-total-text').textContent = 'Tiempo total registrado: ' + totalFmt;
+    $('stat-slides').textContent   = '15';
+    $('stat-tiempo').textContent   = totalFmt;
+    $('stat-promedio').textContent = fmtMM_SS(prom);
+    $('stat-wpm').textContent      = `${wpmFinal}`;
+
+    $('pantalla-entrenamiento').classList.add('hidden');
+    $('pantalla-checklist').classList.remove('hidden');
+}
+
+/* ── CÁLCULO DE PUNTUACIÓN MULTIDIMENSIONAL Y GENERACIÓN DE INFORME */
+function calcularPuntuacionMultidimensional(q1, q2, q3, q4, q5, tiempoSeg) {
+    const ptsAnsiedad = { '1': 10, '2': 8, '3': 6, '4': 4, '5': 2 };
+
+    // Conteo de fallos por categoría
+    const fallosEntonacion = estado.fallosDetectados.filter(f => f.categoria.includes('Entonación')).length;
+    const fallosMuletilla  = estado.fallosDetectados.filter(f => f.categoria.includes('Muletillas')).length;
+    const fallosRitmo      = estado.fallosDetectados.filter(f => f.categoria.includes('Ritmo')).length;
+    const fallosTiempo     = estado.fallosDetectados.filter(f => f.categoria.includes('Tiempo')).length;
+
+    // 1. Entonación y Modulación Vocal (Base 10)
+    let pEntonacion = 10 - (fallosEntonacion * 1.5);
+    pEntonacion = Math.max(3.0, Math.min(10.0, pEntonacion));
+
+    // 2. Pronunciación & Muletillas (Base 10)
+    let pPronunciacion = 10 - (fallosMuletilla * 0.6);
+    if (q3 === 'Parcialmente') pPronunciacion -= 0.8;
+    if (q3 === 'No') pPronunciacion -= 2.0;
+    pPronunciacion = Math.max(2.5, Math.min(10.0, pPronunciacion));
+
+    // 3. Ritmo, Fluidez & Pacing (Base 10)
+    let pRitmo = 10 - (fallosRitmo * 1.3);
+    const wpm = estado.wpmActual || 130;
+    if (wpm > 165 || wpm < 95) pRitmo -= 1.0;
+    if (q2 === 'Parcialmente') pRitmo -= 0.8;
+    if (q2 === 'No') pRitmo -= 2.0;
+    pRitmo = Math.max(3.0, Math.min(10.0, pRitmo));
+
+    // 4. Control del Cronómetro (Base 10)
+    let pTiempo = 10 - (fallosTiempo * 0.8);
+    if (tiempoSeg > 1020) pTiempo -= 3.0; // >17:00
+    else if (tiempoSeg > 960) pTiempo -= 1.8; // >16:00
+    else if (tiempoSeg > 900) pTiempo -= 0.8; // >15:00
+    if (q1 === 'Parcialmente') pTiempo -= 0.5;
+    if (q1 === 'No') pTiempo -= 1.5;
+    pTiempo = Math.max(2.5, Math.min(10.0, pTiempo));
+
+    // 5. Cobertura del Contenido del TFM (Base 10)
+    let pFoco = (q4 === 'Si') ? 10 : (q4 === 'Parcialmente') ? 6.5 : 3.5;
+
+    // 6. Control Emocional & Ansiedad (Base 10)
+    let pAnsiedad = ptsAnsiedad[q5] || 6.0;
+
+    const dimensiones = [
+        { label: 'Entonación & Modulación Vocal', val: parseFloat(pEntonacion.toFixed(1)), peso: 0.20 },
+        { label: 'Pronunciación & Dicción',      val: parseFloat(pPronunciacion.toFixed(1)), peso: 0.20 },
+        { label: 'Ritmo, Pausas & WPM',          val: parseFloat(pRitmo.toFixed(1)), peso: 0.20 },
+        { label: 'Control del Cronómetro',        val: parseFloat(pTiempo.toFixed(1)), peso: 0.20 },
+        { label: 'Foco y Rigor Académico',        val: parseFloat(pFoco.toFixed(1)), peso: 0.10 },
+        { label: 'Control de Ansiedad',          val: parseFloat(pAnsiedad.toFixed(1)), peso: 0.10 }
+    ];
+
+    const total = parseFloat(dimensiones.reduce((sum, d) => sum + (d.val * d.peso), 0).toFixed(1));
+    return { dimensiones, total };
+}
+
+function calcularYMostrarInforme() {
+    const getRadio = name => document.querySelector(`input[name="${name}"]:checked`)?.value ?? 'Si';
+    const q1 = getRadio('q1');
+    const q2 = getRadio('q2');
+    const q3 = getRadio('q3');
+    const q4 = getRadio('q4');
+    const q5 = getRadio('q5');
+    estado._respuestas = { q1, q2, q3, q4, q5 };
+
+    const res = calcularPuntuacionMultidimensional(q1, q2, q3, q4, q5, estado.tiempoFinalSegundos);
+    estado.dimensionesPuntuacion = res.dimensiones;
+    estado.puntuacionGlobal = res.total;
+
+    $('pantalla-checklist').classList.add('hidden');
+    $('pantalla-informe').classList.remove('hidden');
+
+    // Fecha y duración en encabezado
+    $('informe-fecha').textContent =
+        new Date().toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' }) +
+        ' · Tiempo Total: ' + fmtMM_SS(estado.tiempoFinalSegundos) +
+        ` · Modalidad: ${estado.modoGrabacion === 'video' ? '📹 Vídeo + Audio' : '🎙️ Solo Voz'}`;
+
+    // Configurar reproductor multimedia
+    configurarReproductorTentativa();
+
+    // Anillo animado de puntuación
+    renderAnilloPuntuacion(estado.puntuacionGlobal);
+
+    // Barras de dimensiones
+    renderBarrasDimensiones(estado.dimensionesPuntuacion);
+
+    // Auditoría de fallos observados (con timestamps para saltar en el vídeo/audio)
+    renderAuditoriaFallos();
+
+    // Transcripción completa
+    renderTranscripcionAcordeon();
+
+    // Diagnósticos y recomendaciones
+    renderRecomendaciones(q1, q2, q3, q4, q5);
+}
+
+/* ── CONFIGURACIÓN DEL REPRODUCTOR DE LA TENTATIVA ──────────────── */
+function configurarReproductorTentativa() {
+    const isVid = (estado.modoGrabacion === 'video');
+    const vPlayer = $('review-video');
+    const aPlayer = $('review-audio');
+    const tagBadge = $('media-type-badge');
+    const durText = $('media-duration-text');
+    const extLabel = $('download-ext-label');
+
+    durText.textContent = 'Duración grabada: ' + fmtMM_SS(estado.tiempoFinalSegundos);
+    extLabel.textContent = isVid ? '.webm (Vídeo)' : '.webm (Audio)';
+
+    if (isVid) {
+        tagBadge.innerHTML = '📹 Vídeo Completo de la Tentativa';
+        vPlayer.classList.remove('hidden');
+        aPlayer.classList.add('hidden');
+        if (estado.recordedURL) vPlayer.src = estado.recordedURL;
+    } else {
+        tagBadge.innerHTML = '🎧 Grabación de Audio de la Tentativa';
+        aPlayer.classList.remove('hidden');
+        vPlayer.classList.add('hidden');
+        if (estado.recordedURL) aPlayer.src = estado.recordedURL;
+    }
+
+    // Renderizar píldoras de navegación por diapositiva
+    const pillsCont = $('timeline-pills');
+    pillsCont.innerHTML = '';
+    estado.slideTimestamps.forEach(st => {
+        const pill = document.createElement('button');
+        pill.className = 'timeline-pill';
+        pill.innerHTML = `Slide ${st.slide} <span class="pill-time">[${fmtMM_SS(st.segundoInicio)}]</span>`;
+        pill.title = `Saltar a Diapositiva ${st.slide}: ${st.nombre}`;
+        pill.onclick = () => saltarAMomento(st.segundoInicio);
+        pillsCont.appendChild(pill);
+    });
+}
+
+function saltarAMomento(segundo) {
+    const isVid = (estado.modoGrabacion === 'video');
+    const player = isVid ? $('review-video') : $('review-audio');
+    if (!player) return;
+
+    const targetSec = Math.max(0, segundo - 2); // 2 segundos antes para contexto
+    player.currentTime = targetSec;
+    player.play().catch(() => {});
+
+    $('media-review-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function descargarGrabacion() {
+    if (!estado.recordedURL) {
+        alert('No hay grabación disponible para descargar.');
+        return;
+    }
+    const isVid = (estado.modoGrabacion === 'video');
+    const ext = isVid ? 'mp4' : 'webm';
+    const a = document.createElement('a');
+    a.href = estado.recordedURL;
+    a.download = `Tentativa_TFM_${new Date().toISOString().slice(0, 10)}_${isVid ? 'Video' : 'Audio'}.${ext}`;
+    a.click();
+}
+
+/* ── ANILLO Y BARRAS DE PUNTUACIÓN ──────────────────────────────── */
+function renderAnilloPuntuacion(score) {
+    const arc = $('score-arc');
+    const circ = 2 * Math.PI * 72; // r = 72
+    const pct = Math.max(0, Math.min(10, score)) / 10;
+    const strokeColor = score >= 8.5 ? '#10b981' : score >= 6.5 ? '#3b82f6' : score >= 4.5 ? '#f59e0b' : '#ef4444';
+
+    $('score-num').textContent = score.toFixed(1);
+    $('score-num').style.color = strokeColor;
+
+    arc.setAttribute('stroke', strokeColor);
+    arc.style.strokeDasharray  = circ;
+    arc.style.strokeDashoffset = circ;
+    setTimeout(() => { arc.style.strokeDashoffset = circ * (1 - pct); }, 150);
+
+    const veredictos = [
+        { min: 9.0, txt: '🏆 Dictamen de Excelencia: ¡Defensa impecable para el tribunal!', col: '#10b981' },
+        { min: 7.5, txt: '💪 Muy Buena Solvencia: Pronunciación y entonación consistentes.', col: '#34d399' },
+        { min: 6.0, txt: '📈 Nivel Aceptable: Corrige los fallos detectados antes del tribunal.', col: '#60a5fa' },
+        { min: 4.5, txt: '🔄 En Desarrollo: La ansiedad y el ritmo necesitan más ensayos.', col: '#fbbf24' },
+        { min: 0.0, txt: '💡 Tentativa Inicial: Revisa cada fallo y repite la práctica.', col: '#f87171' }
+    ];
+    const v = veredictos.find(x => score >= x.min);
+    $('score-verdict').textContent = v.txt;
+    $('score-verdict').style.color = v.col;
+}
+
+function renderBarrasDimensiones(dims) {
+    $('score-bars').innerHTML = dims.map(d => {
+        const col = d.val >= 8 ? '#10b981' : d.val >= 6 ? '#3b82f6' : d.val >= 4 ? '#f59e0b' : '#ef4444';
+        const pctWidth = (d.val / 10) * 100;
+        return `
+            <div class="score-bar-row">
+                <div class="score-bar-label">${d.label}</div>
+                <div class="score-bar-track">
+                    <div class="score-bar-fill" style="width:0%;background:${col}" data-target="${pctWidth}"></div>
+                </div>
+                <div class="score-bar-val" style="color:${col}">${d.val.toFixed(1)}</div>
+            </div>`;
+    }).join('');
+
+    setTimeout(() => {
+        document.querySelectorAll('.score-bar-fill').forEach(el => {
+            el.style.width = el.dataset.target + '%';
+        });
+    }, 180);
+}
+
+/* ── AUDITORÍA DETALLADA DE FALLOS OBSERVADOS ───────────────────── */
+function renderAuditoriaFallos() {
+    const fallos = estado.fallosDetectados;
+
+    const cntCrit = fallos.filter(f => f.gravedad === 'crit').length;
+    const cntWarn = fallos.filter(f => f.gravedad === 'warn').length;
+    const cntMild = fallos.filter(f => f.gravedad === 'mild').length;
+
+    $('cnt-total').textContent = `Total: ${fallos.length}`;
+    $('cnt-crit').textContent  = `${cntCrit} Graves`;
+    $('cnt-warn').textContent  = `${cntWarn} Moderados`;
+    $('cnt-mild').textContent  = `${cntMild} Leves`;
+
+    renderListaFiltradaFallos();
+}
+
+function filtrarFallos(tipo, btn) {
+    estado.filtroActivo = tipo;
+    document.querySelectorAll('.fail-filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderListaFiltradaFallos();
+}
+
+function renderListaFiltradaFallos() {
+    const listCont = $('failures-list');
+    const filtro = estado.filtroActivo;
+
+    let items = estado.fallosDetectados;
+    if (filtro === 'entonacion') items = items.filter(f => f.tipo === 'entonacion');
+    else if (filtro === 'muletilla') items = items.filter(f => f.tipo === 'muletilla');
+    else if (filtro === 'ritmo') items = items.filter(f => f.tipo === 'ritmo');
+    else if (filtro === 'tiempo') items = items.filter(f => f.tipo === 'tiempo');
+
+    if (items.length === 0) {
+        listCont.innerHTML = `
+            <div class="empty-failures">
+                <div class="icon">🎉</div>
+                <p><strong>¡Excelente desempeño en esta sección!</strong><br>
+                No se registraron fallos ${filtro !== 'todos' ? 'en esta categoría' : 'durante la tentativa'}. Mantén esta disciplina ante el tribunal.</p>
+            </div>`;
+        return;
+    }
+
+    const sevLabels = { crit: '🔴 Crítico', warn: '🟠 Moderado', mild: '⚠️ Leve' };
+
+    listCont.innerHTML = items.map(f => `
+        <div class="failure-card ${f.gravedad}">
+            <div class="fail-top">
+                <div class="fail-tags">
+                    <span class="fail-tag-sev ${f.gravedad}">${sevLabels[f.gravedad] || 'Fallo'}</span>
+                    <span class="fail-tag-cat">${f.categoria}</span>
+                    <span class="fail-tag-time">📍 Slide ${f.slide} · [${fmtMM_SS(f.segundo)}]</span>
+                </div>
+                <button class="btn-jump-fail" onclick="saltarAMomento(${f.segundo})">
+                    ▶ Ver/Oír este Fallo (${fmtMM_SS(f.segundo)})
+                </button>
+            </div>
+            <div class="fail-desc"><strong>Detalle Observado:</strong> ${f.descripcion}</div>
+            <div class="fail-impact"><strong>Impacto ante el Tribunal UE:</strong> ${f.impacto}</div>
+            <div class="fail-tip"><strong>Pauta de Corrección:</strong> ${f.consejo}</div>
+        </div>
+    `).join('');
+}
+
+function agregarObservacionManual() {
+    const inp = $('manual-obs-text');
+    const txt = inp.value.trim();
+    if (!txt) return;
+
+    const isVid = (estado.modoGrabacion === 'video');
+    const player = isVid ? $('review-video') : $('review-audio');
+    const currentSec = player ? Math.round(player.currentTime) : 0;
+    
+    // Determinar diapositiva basada en currentSec
+    const st = estado.slideTimestamps.find(s => currentSec >= s.segundoInicio && currentSec < (s.segundoInicio + s.duracion))
+        || { slide: 1 };
+
+    registrarFallo({
+        tipo: 'manual',
+        categoria: 'Observación Propia / Autocrítica',
+        gravedad: 'warn',
+        segundo: currentSec,
+        slide: st.slide,
+        descripcion: txt,
+        impacto: 'Anotación registrada por la alumna/tutor al revisar la grabación.',
+        consejo: 'Aplica esta corrección consciente en tu siguiente ensayo diario.'
+    });
+
+    inp.value = '';
+    renderAuditoriaFallos();
+}
+
+/* ── TRANSCRIPCIÓN CON MULETILLAS RESALTADAS ────────────────────── */
+function renderTranscripcionAcordeon() {
+    const el = $('transcript-body');
+    if (!estado.fullTranscript.trim()) {
+        el.innerHTML = '<p style="color:var(--muted);">No se detectó transcripción de voz o el reconocimiento no estuvo activo durante esta sesión.</p>';
+        return;
+    }
+
+    let resaltado = estado.fullTranscript;
+    MULETILLAS_PATRONES.forEach(pat => {
+        resaltado = resaltado.replace(pat.regex, match => `<mark class="muletilla-mark">${match}</mark>`);
+    });
+
+    el.innerHTML = `<p>${resaltado}</p>`;
+}
+
+/* ── RECOMENDACIONES PEDAGÓGICAS Y PUNTOS FUERTES ───────────────── */
+function renderRecomendaciones(q1, q2, q3, q4, q5) {
+    const positivos = [];
+    const mejorar = [];
+    const recomendaciones = [];
+
+    // Pronunciación y Entonación
+    const fallosEntonacion = estado.fallosDetectados.filter(f => f.categoria.includes('Entonación')).length;
+    const fallosMuletilla  = estado.fallosDetectados.filter(f => f.categoria.includes('Muletillas')).length;
+
+    if (fallosEntonacion === 0) {
+        positivos.push({ icon: '🎤', txt: 'Entonación viva y dinámica: Mantuviste curvas de inflexión adecuadas sin caer en monotonía.' });
+    } else {
+        mejorar.push({ icon: '🎤', txt: `Se detectaron ${fallosEntonacion} pasajes con entonación plana. La monotonía fatiga a los miembros del tribunal.` });
+        recomendaciones.push({ icon: '📈', txt: 'Practica leyendo tu guion marcando flechas hacia arriba (énfasis) y hacia abajo (conclusión firme).' });
+    }
+
+    if (fallosMuletilla === 0) {
+        positivos.push({ icon: '🗣️', txt: 'Dicción limpia: Cero muletillas detectadas en la exposición. Gran rigor verbal.' });
+    } else {
+        mejorar.push({ icon: '🗣️', txt: `Se detectaron ${fallosMuletilla} muletillas ("eh", "o sea", "bueno"). Restan autoridad académica.` });
+        recomendaciones.push({ icon: '🤫', txt: 'Entrena sustituir cada muletilla por 1 segundo de silencio con respiración nasal.' });
+    }
+
+    // Tiempo total vs 15 minutos
+    if (estado.tiempoFinalSegundos <= 900) {
+        positivos.push({ icon: '⏰', txt: `¡Exposición dentro del tiempo! (${fmtMM_SS(estado.tiempoFinalSegundos)} / 15:00). Cumplimiento normativo riguroso.` });
+    } else {
+        mejorar.push({ icon: '⏰', txt: `Superaste los 15 minutos (${fmtMM_SS(estado.tiempoFinalSegundos)}). El presidente del tribunal puede cortarte la palabra.` });
+        recomendaciones.push({ icon: '✂️', txt: 'Ensaya para cronometrar en 13:30. Así dispondrás de 1 minuto y medio de margen de seguridad.' });
+    }
+
+    // Ansiedad
+    const niv = parseInt(q5) || 3;
+    if (niv <= 2) {
+        positivos.push({ icon: '😌', txt: `Nivel de ansiedad bajo (${q5}/5). Tu respuesta psicofisiológica está bien adaptada a la exposición.` });
+    } else {
+        mejorar.push({ icon: '😰', txt: `Nivel de ansiedad percibido elevado (${q5}/5). El estrés afecta directamente a la salivación y el ritmo de voz.` });
+        recomendaciones.push({ icon: '🧘', txt: 'Aplica 5 minutos de respiración diafragmática 4-7-8 inmediatamente antes de iniciar la defensa.' });
+    }
+
+    const renderItems = (items, cls) => items.map(it => `
+        <div class="report-item ${cls}">
+            <span class="ri-icon">${it.icon}</span>
+            <span>${it.txt}</span>
+        </div>
+    `).join('');
+
+    $('report-positivos').innerHTML       = renderItems(positivos, 'positive');
+    $('report-mejorar').innerHTML         = renderItems(mejorar, 'improve');
+    $('report-recomendaciones').innerHTML = renderItems(recomendaciones, 'improve');
+}
+
+/* ── GUARDADO EN HISTORIAL LOCAL ────────────────────────────────── */
+function guardarChecklist() {
+    const q = estado._respuestas || {};
+    const sesion = {
+        fecha:          new Date().toLocaleDateString('es-ES'),
+        hora:           new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        modo:           estado.modoGrabacion,
+        tiempoTotal:    estado.tiempoFinalSegundos,
+        tiempoFmt:      fmtMM_SS(estado.tiempoFinalSegundos),
+        puntuacion:     estado.puntuacionGlobal,
+        fallosTotales:  estado.fallosDetectados.length,
+        fallosGraves:   estado.fallosDetectados.filter(f => f.gravedad === 'crit').length,
+        fallosModerados:estado.fallosDetectados.filter(f => f.gravedad === 'warn').length,
+        fallosLeves:    estado.fallosDetectados.filter(f => f.gravedad === 'mild').length,
+        wpmMedio:       estado.wpmActual || 130,
+        gestionTiempo:  q.q1 || 'Si',
+        pacing:         q.q2 || 'Si',
+        pronunciacion:  q.q3 || 'Si',
+        focoMensaje:    q.q4 || 'Si',
+        ansiedad:       q.q5 || '3'
+    };
+
+    const historico = JSON.parse(localStorage.getItem('historico_tfm') || '[]');
+    historico.push(sesion);
+    localStorage.setItem('historico_tfm', JSON.stringify(historico));
+
+    alert('✅ Tentativa guardada con éxito en el historial de entrenamiento.');
+    mostrarTab('historial');
+}
+
+function renderHistorial() {
+    const historico = JSON.parse(localStorage.getItem('historico_tfm') || '[]');
+    const contenedor = $('history-content');
+
+    if (historico.length === 0) {
+        contenedor.innerHTML = `
+            <div class="empty-history">
+                <div class="icon">📋</div>
+                <p>Aún no hay tentativas registradas.<br>Completa tu primera sesión de ensayo con grabación.</p>
+            </div>`;
+        return;
+    }
+
+    const filas = [...historico].reverse().map((s, i) => {
+        const numTentativa = historico.length - i;
+        const modoIcon = s.modo === 'video' ? '📹 Vídeo' : '🎙️ Voz';
+        const score = s.puntuacion !== null ? Number(s.puntuacion).toFixed(1) : '—';
+        const fallos = s.fallosTotales !== undefined ? s.fallosTotales : '—';
+
+        return `
+            <tr>
+                <td><strong>#${numTentativa}</strong></td>
+                <td>${s.fecha} ${s.hora || ''}</td>
+                <td><span style="font-size:.78rem;font-weight:600;">${modoIcon}</span></td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--primary-lt);">${s.tiempoFmt || fmtMM_SS(s.tiempoTotal||0)}</span></td>
+                <td><strong style="color:${score >= 7.5 ? 'var(--success)' : score >= 5 ? 'var(--warn)' : 'var(--danger)'}">${score} / 10</strong></td>
+                <td><span style="font-weight:700;color:${fallos > 4 ? 'var(--danger)' : fallos > 1 ? 'var(--warn)' : 'var(--success)'}">${fallos} fallos</span></td>
+                <td>${s.wpmMedio || '—'} WPM</td>
+                <td><span class="badge-ansiedad a${s.ansiedad}">${s.ansiedad}</span></td>
+            </tr>`;
+    }).join('');
+
+    contenedor.innerHTML = `
+        <div class="history-table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tentativa</th>
+                        <th>Fecha y Hora</th>
+                        <th>Modalidad</th>
+                        <th>Tiempo Total</th>
+                        <th>Puntuación</th>
+                        <th>Fallos</th>
+                        <th>Ritmo</th>
+                        <th>Ansiedad</th>
+                    </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+            </table>
+        </div>`;
+}
+
+function exportarCSV() {
+    const historico = JSON.parse(localStorage.getItem('historico_tfm') || '[]');
+    if (!historico.length) { alert('No hay datos para exportar.'); return; }
+
+    const header = ['Tentativa', 'Fecha', 'Hora', 'Modo', 'Tiempo Total', 'Puntuacion', 'Fallos Totales', 'Fallos Graves', 'Fallos Moderados', 'Fallos Leves', 'WPM Medio', 'Ansiedad'];
+    const rows = historico.map((s, i) => [
+        i + 1,
+        s.fecha,
+        s.hora || '',
+        s.modo || 'audio',
+        s.tiempoFmt || '',
+        s.puntuacion || '',
+        s.fallosTotales || 0,
+        s.fallosGraves || 0,
+        s.fallosModerados || 0,
+        s.fallosLeves || 0,
+        s.wpmMedio || '',
+        s.ansiedad || ''
+    ]);
+
+    const csv = [header, ...rows].map(r => r.join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Historico_Oratoria_TFM_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+}
+
+function borrarHistorial() {
+    if (confirm('¿Segura que deseas borrar todo el historial de tentativas? Esta acción no se puede deshacer.')) {
+        localStorage.removeItem('historico_tfm');
+        renderHistorial();
+    }
+}
+
+function reiniciarEntrenamiento() {
+    location.reload();
+}
+
+/* ── ATAJOS DE TECLADO Y GESTOS TÁCTILES (MÓVIL & TABLETA) ─────── */
+document.addEventListener('keydown', e => {
+    if (!estado.activo) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+    if (e.code === 'Space' || e.code === 'ArrowRight') {
+        e.preventDefault();
+        siguienteDiapositiva();
+    }
+    if (e.code === 'KeyP') {
+        e.preventDefault();
+        togglePausa();
+    }
+});
+
+// Deslizamiento táctil (Swipe) para pantallas táctiles (iPads, tablets, smartphones)
+let touchStartX = 0;
+let touchStartY = 0;
+document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+    if (!estado.activo) return;
+    const diffX = touchStartX - e.changedTouches[0].screenX;
+    const diffY = touchStartY - e.changedTouches[0].screenY;
+    // Si desliza hacia la izquierda más de 65px y el movimiento vertical es pequeño
+    if (diffX > 65 && Math.abs(diffY) < 55) {
+        siguienteDiapositiva();
+    }
+}, { passive: true });
+</script>
+</body>
+</html>
